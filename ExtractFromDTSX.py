@@ -89,18 +89,6 @@ def extract_variable(file_path):
 
     return variable
 
-
-def saveAsXLSX(dictionary,excel_file_name = 'erp.xlsx'):
-    path = f"{repo}{excel_file_name}"
-    if(os.path.exists(path)):
-        new_df = pd.DataFrame(dictionary)
-        existing_df = pd.read_excel(path)
-        combined_df = pd.concat([existing_df, new_df], ignore_index=True)
-        combined_df.to_excel(path, index=False)
-    else:
-        df = pd.DataFrame(dictionary)
-        df.to_excel(f"{repo}{excel_file_name}", index=False)
-
 def saveAsJson(dictionary,json_file_name):
     with open(json_file_name,"w",encoding="utf-8") as json_file :
         json.dump(dictionary, json_file,ensure_ascii=False,indent=4)
