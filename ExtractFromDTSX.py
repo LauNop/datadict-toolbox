@@ -6,6 +6,10 @@ import json
 
 repo = "C:/Users/La_Nopoly/Desktop/TestExtract/Excel/ExcelResults/"
 
+def dtsx_connect(file_path):
+    tree = ET.parse(file_path)
+    return tree.getroot()
+
 def extract_erp_query(file_path_list):
     erp_query = {"DEST_TABLE":[],"SQL_QUERY":[]}
     for file_path in file_path_list:
