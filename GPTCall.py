@@ -8,10 +8,10 @@ def get_keys(path):
         return json.load(f)
 
 # Retrieve SQL Query that will serve as input
-SQL_Query = get_keys("C:/Users/La_Nopoly/source/repos/ExtractFromDTSX/SQL_Query.json")["Query"]
+#SQL_Query = get_keys("C:/Users/La_Nopoly/source/repos/ExtractFromDTSX/SQL_Query.json")["Query"]
 
 # Set your OpenAI GPT-3 API key here
-api_key = get_keys("C:/Users/La_Nopoly/source/repos/ExtractFromDTSX/.secret/API.json")["Hello_G1B2H3"]
+api_key = get_keys("C:/Users/La_Nopoly/Desktop/API.json")["DICO_KEY"]
 
 
 
@@ -19,7 +19,7 @@ api_key = get_keys("C:/Users/La_Nopoly/source/repos/ExtractFromDTSX/.secret/API.
 def chat_with_gpt3(prompt, max_tokens=400):
     openai.api_key = api_key
     response = openai.Completion.create(
-        engine="text-davinci-002",  # You can also try "text-davinci-003" or other engines
+        engine="text-davinci-003",  # You can also try "text-davinci-003" or other engines
         prompt=prompt,
         max_tokens=max_tokens,
     )
