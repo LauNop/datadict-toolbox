@@ -5,20 +5,18 @@ import os
 import json
 
 repo = "C:/Users/La_Nopoly/Desktop/TestExtract/Excel/ExcelResults/"
+dash_line = "\n"+"-"*100+"\n"
 
-def dtsx_connect(file_path):
+
+def dtsx_open(file_path):
     tree = ET.parse(file_path)
-    return tree.getroot()
+    return tree.getroot(),  "{www.microsoft.com/SqlServer/Dts}"
 
 def extract_erp_query(file_path_list):
     erp_query = {"DEST_TABLE":[],"SQL_QUERY":[]}
     for file_path in file_path_list:
-        tree = ET.parse(file_path)
-        root = tree.getroot()
+        root, namespace = dtsx_open(file_path)
         new_values = []
-
-        # Namespace pour les tâches SSIS
-        namespace = "{www.microsoft.com/SqlServer/Dts}"
 
         executables = root.findall(".//{}Executables".format(namespace))[0]
         executable = executables.find("{}Executable".format(namespace))
@@ -52,38 +50,15 @@ def extract_ssis_mapping(file_path):
     ssis_mapping = {"ALIAS_NAME":[],"NAME":[]}
     new_values = []
 
-    root = dtsx_connect(file_path)
-    dash_line = "\n"+"-"*100+"\n"
+    root, namespace = dtsx_open(file_path)
 
-    # Namespace pour les tâches SSIS
-    namespace = "{www.microsoft.com/SqlServer/Dts}"
-
-    # Rechercher toutes les variables de transformation dans le package
-    for variables in root.findall(".//{}Variable".format(namespace)):
-        Object_name = variables.attrib.get("{}ObjectName".format(namespace))
-        print("Object_name: {}".format(Object_name))
-        if Object_name == "RequêteRécupération" :
-            SQLQuery = variables.find("{}VariableValue".format(namespace)).text
-            print("RequêteRécupération/requête SQL: {}".format(SQLQuery))
-
-    print(dash_line)
-
-
-    executables = root.findall(".//{}Executables".format(namespace))[0]
+    executables = root.find(".//{}Executables".format(namespace))
     executable = executables.find("{}Executable".format(namespace))
-    print("Executable/refId: {}".format(executable.attrib.get("{}refId".format(namespace))))
-    print("Executable/ObjectName: {}".format(executable.attrib.get("{}ObjectName".format(namespace))))
     subexecs = executable.find("{}Executables".format(namespace)).findall("{}Executable".format(namespace))
     component = ""
     for subexec in subexecs:
-        print("Executable/refId: {}".format(subexec.attrib.get("{}refId".format(namespace))))
-        print("Executable/ObjectName: {}".format(subexec.attrib.get("{}ObjectName".format(namespace))))
-        print(dash_line)
-        if subexec.attrib.get("{}ObjectName".format(namespace))=="Tâche de flux de données":
-            
+        if subexec.attrib.get("{}ObjectName".format(namespace))=="Tâche de flux de données":  
             component = subexec.find("{}ObjectData".format(namespace)).find("pipeline").find("components").find("component")
-
-    print(dash_line)
 
     col_alias = []
     input_ = component.find("inputs").find("input")
@@ -103,6 +78,17 @@ def extract_ssis_mapping(file_path):
             ssis_mapping[key].append(value)
 
     return ssis_mapping
+
+def extract_variable(file_path):
+    root, namespace = dtsx_open(file_path)
+    variable = {"VARIABLE":[]}
+
+        # Rechercher toutes les variables de transformation dans le package dtsx
+    for variables in root.findall(".//{}Variable".format(namespace)):
+        variable["VARIABLE"].append(variables.attrib.get("{}ObjectName".format(namespace))) 
+
+    return variable
+
 
 def saveAsXLSX(dictionary,excel_file_name = 'erp.xlsx'):
     path = f"{repo}{excel_file_name}"
@@ -126,13 +112,13 @@ file2 = "C:/Users/La_Nopoly/Desktop/TestExtract/DTSX/DimArticles.dtsx"
 
 # Appel de la fonction en fournissant le chemin vers le fichier .dtsx
 if __name__ == "__main__":
-    dash_line = "\n"+"-"*100+"\n"
     folder_path = "C:/Users/La_Nopoly/Desktop/TestExtract/DTSX"
     file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
     print(file_names)
     print(len(file_names))
     print(dash_line)
     print(extract_ssis_mapping(file_names[0]))
+    print(extract_variable(file_names[0]))
     #dico = extract_erp_query(file_names)
     #print(dico)
     #print(len(dico))
