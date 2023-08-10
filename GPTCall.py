@@ -1,7 +1,7 @@
 ﻿import openai
 import pandas as pd
 import json
-import ExtracFromDTSX
+
 
 def get_keys(path):
     with open(path) as f:
@@ -63,7 +63,6 @@ def main(SQL_Query):
     # Save ChatGPT's response to an Excel file
     data = {'Response': [gpt3_response]}
     df = pd.DataFrame(data)
-    df[]
     df.to_excel('chatgpt_response.xlsx', index=False)
 
  
