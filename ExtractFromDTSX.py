@@ -48,12 +48,11 @@ def extract_erp_query(file_path_list):
 
     return erp_query
 
-def extraire_erp_structure(file_path):
-    erp_struct = {"TEMP_COLUMN":[],"EXPRESSION":[],"DEST_COLUMN":[],"DEST_TABLE":[],"DATABASE_PLAN":[],"MAGASIN":[]}
+def extract_ssis_mapping(file_path):
+    ssis_mapping = {"ALIAS_NAME":[],"NAME":[]}
     new_values = []
 
-    tree = ET.parse(file_path)
-    root = tree.getroot()
+    root = dtsx_connect(file_path)
     dash_line = "\n"+"-"*100+"\n"
 
     # Namespace pour les tâches SSIS
@@ -84,34 +83,26 @@ def extraire_erp_structure(file_path):
             
             component = subexec.find("{}ObjectData".format(namespace)).find("pipeline").find("components").find("component")
 
-    properties = component.find("properties")
-    for property_ in properties.findall("property"):
-        if(property_.attrib.get("name") == "OpenRowset"):
-            tab_db_dest = property_.text
-            tab_db_dest = tab_db_dest[len("[dbo]."):]
-            tab_db_dest = tab_db_dest[1:-1]
-            print("Property/OpenRowset: {}".format(tab_db_dest))
-
     print(dash_line)
 
-    sourceColAliasName = []
+    col_alias = []
     input_ = component.find("inputs").find("input")
     inputColumns = input_.find("inputColumns")
     for inputCol in inputColumns.findall("inputColumn"):
         sourceColName = inputCol.attrib.get("cachedName")
-        sourceColAliasName.append(sourceColName)
-        print("InputColumn NAME: {}".format(sourceColName))
-
-    print(dash_line)
+        col_alias.append(sourceColName)
 
     col_dest = []
     outputColumns = input_.find("externalMetadataColumns")
     for outputCol in outputColumns.findall("externalMetadataColumn"):
         destinationColName = outputCol.attrib.get("name")
         col_dest.append(destinationColName)
-        print("OutputColumn NAME: {}".format(destinationColName))
 
-    print(dash_line)
+    new_values = [col_alias,col_dest]
+    for key, value in zip(ssis_mapping.keys(), new_values):
+            ssis_mapping[key].append(value)
+
+    return ssis_mapping
 
 def saveAsXLSX(dictionary,excel_file_name = 'erp.xlsx'):
     path = f"{repo}{excel_file_name}"
@@ -141,9 +132,10 @@ if __name__ == "__main__":
     print(file_names)
     print(len(file_names))
     print(dash_line)
-    dico = extract_erp_query(file_names)
-    print(dico)
-    print(len(dico))
-    saveAsJson(dico,"Query.json")
+    print(extract_ssis_mapping(file_names[0]))
+    #dico = extract_erp_query(file_names)
+    #print(dico)
+    #print(len(dico))
+    
          
 
