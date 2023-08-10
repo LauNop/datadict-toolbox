@@ -37,7 +37,7 @@ def main(SQL_Query):
     select TABLE_NAME as Contenant, COLUMN_NAME, Cube 
     from INFORMATION_SCHEMA.COLUMNS
 
-    structure = {{"Alias":["Contenant","",""],"COLUMN":["TABLE_NAME","COLUMN_NAME","Cube"],"TABLE":["COLUMNS","COLUMNS","COLUMNS"],"DATABASE":["INFORMATION_SCHEMA","INFORMATION_SCHEMA","INFORMATION_SCHEMA",]}}
+    {{"Alias":["Contenant","",""],"COLUMN":["TABLE_NAME","COLUMN_NAME","Cube"],"TABLE":["COLUMNS","COLUMNS","COLUMNS"],"DATABASE":["INFORMATION_SCHEMA","INFORMATION_SCHEMA","INFORMATION_SCHEMA",]}}
 
     You should know that this data will become a pandas DataFrame. We want it to have these columns in order : COLUMN_NAME (Alias),	NOM_EXPLICIT (Empty),	DATA_TYPE (Empty),	TABLE_NAME_CUBE (Empty),	CUBE_NAME (Empty),	CATALOG_NAME (Empty),	VIEW_NAME (Empty),	TABLE_NAME_INFOCENTRE (Empty),	DATABASE_NAME_INFOCENTRE (Empty),	SERVEUR_INFOCENTRE (Empty),	COLUMN_NAME_ERP (COLUMN),	TABLE_NAME_ERP (TABLE),	DATABASE_NAME_ERP (DATABASE),	ERP_NAME (Empty),	EXPRESSION (Empty),	DEFINITION (Empty),	LIAISON (Alias)
 
@@ -53,6 +53,8 @@ def main(SQL_Query):
     # Get response from ChatGPT
     gpt3_response = chat_with_gpt3(chat_prompt)
 
+    print(type(gpt3_response))
+
  
 
     # Print ChatGPT's response
@@ -61,7 +63,7 @@ def main(SQL_Query):
  
 
     # Save ChatGPT's response to an Excel file
-    data = {'Response': [gpt3_response]}
+    data = {gpt3_response}
     df = pd.DataFrame(data)
     df.to_excel('chatgpt_response.xlsx', index=False)
 
