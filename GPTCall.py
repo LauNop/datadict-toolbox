@@ -39,18 +39,18 @@ def main(SQL_Query):
     select TABLE_NAME as Contenant, COLUMN_NAME, Cube 
     from INFORMATION_SCHEMA.COLUMNS
 
-    I count 3 columns so the list length of each keys must be 3 
+    I count 3 columns so the list length of each key must be 3 
 
-    {{"Alias":["Contenant","",""],"COLUMN":["TABLE_NAME","COLUMN_NAME","Cube"],"TABLE":["COLUMNS","COLUMNS","COLUMNS"],"DATABASE":["INFORMATION_SCHEMA","INFORMATION_SCHEMA","INFORMATION_SCHEMA",]}}
+    {{"MAPPING":["Contenant","",""],"COLUMN_NAME_ERP":["TABLE_NAME","COLUMN_NAME","Cube"],"TABLE_NAME_ERP":["COLUMNS","COLUMNS","COLUMNS"],"DATABASE_NAME_ERP":["INFORMATION_SCHEMA","INFORMATION_SCHEMA","INFORMATION_SCHEMA",]}}
 
     Example 2:
     SQL Query :    
     select AvionID, Pilote as Employee, Cargo as nbr_passengers, APT as aeroport 
     from AVION
 
-    I count 4 columns so the list length of each keys must be 4 
+    I count 4 columns so the list length of each key must be 4 
 
-    {{"Alias":["","Employee","nbr_passengers","aeroport],"COLUMN":["AvionID","Pilote","Cargo","APT"],"TABLE":["AVION","AVION","AVION","AVION"],"DATABASE":["Unknown","Unknown","Unknown","Unknown"]}}
+    {{"MAPPING":["","Employee","nbr_passengers","aeroport],"COLUMN_NAME_ERP":["AvionID","Pilote","Cargo","APT"],"TABLE_NAME_ERP":["AVION","AVION","AVION","AVION"],"DATABASE_NAME_ERP":["Unknown","Unknown","Unknown","Unknown"]}}
 
     Complete this one
     SQL Query:
