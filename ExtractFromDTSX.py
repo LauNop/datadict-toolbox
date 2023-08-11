@@ -18,14 +18,21 @@ def extract_erp_query(file_path_list):
         root, namespace = dtsx_open(file_path)
         new_values = []
 
+        print(root.attrib.get("{}ObjectName".format(namespace)))
         executables = root.findall(".//{}Executables".format(namespace))[0]
-        executable = executables.find("{}Executable".format(namespace))
+        executable_list = executables.findall("{}Executable".format(namespace))
+        for element in executable_list:
+            if element.attrib.get("{}ObjectName".format(namespace))=="Conteneur de boucles Foreach":
+                executable = element
         subexecs = executable.find("{}Executables".format(namespace)).findall("{}Executable".format(namespace))
         component = ""
         for subexec in subexecs:
             if subexec.attrib.get("{}ObjectName".format(namespace))=="Tâche de flux de données":
             
-                component = subexec.find("{}ObjectData".format(namespace)).find("pipeline").find("components").find("component")
+                components = subexec.find("{}ObjectData".format(namespace)).find("pipeline").find("components").findall("component")
+                for el in components:
+                    if el.attrib.get("description")=="Destination OLE DB":
+                        component = el
 
         properties = component.find("properties")
         for property_ in properties.findall("property"):
@@ -52,6 +59,7 @@ def extract_ssis_mapping(file_path):
 
     root, namespace = dtsx_open(file_path)
 
+    
     executables = root.find(".//{}Executables".format(namespace))
     executable = executables.find("{}Executable".format(namespace))
     subexecs = executable.find("{}Executables".format(namespace)).findall("{}Executable".format(namespace))
@@ -107,7 +115,9 @@ if __name__ == "__main__":
     print(dash_line)
     print(extract_ssis_mapping(file_names[0]))
     print(extract_variable(file_names[0]))
-    #dico = extract_erp_query(file_names)
+    
+    saveAsJson(extract_erp_query(file_names),"Queries.json")
+
     #print(dico)
     #print(len(dico))
     
