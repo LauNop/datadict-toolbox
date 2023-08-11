@@ -21,12 +21,14 @@ api_key = get_keys("C:/Users/La_Nopoly/Desktop/API.json")["DICO_KEY"]
 
 
 # Function to interact with ChatGPT
-def get_model_response(prompt,example_prompt,example_resp,expl2_p,expl2_r, max_tokens=1500):
+def get_model_response(prompt,dict_prompt,dict_resp, example_prompt,example_resp,expl2_p,expl2_r, max_tokens=1500):
     openai.api_key = api_key
     response = openai.ChatCompletion.create(
         model=model_name,  # You can also try "text-davinci-003" or other engines
         messages=[
             {"role":"system","content":"You extract information from a SQL query"},
+            {"role":"user","content":dict_prompt},
+            {"role":"assistant","content":dict_resp}
             {"role":"user","content":example_prompt},
             {"role":"assistant","content":example_resp},
             {"role":"user","content":expl2_p},
@@ -66,6 +68,40 @@ def main(SQL_Query):
     dict_prompt = """
      Create a dictionary with the following Keys:"COLUMN_NAME","NOM_EXPLICIT","DATA_TYPE","TABLE_NAME_CUBE","CUBE_NAME","CATALOG_NAME","VIEW_NAME","TABLE_NAME_INFOCENTRE","DATABASE_NAME_INFOCENTRE","SERVEUR_INFOCENTRE","COLUMN_NAME_ERP","TABLE_NAME_ERP","DATABASE_NAME_ERP","ERP_NAME","EXPRESSION","DEFINITION","LIAISON". The keys' values should be empty lists.
     """
+    dict_resp = """Here's the dictionary you requested with empty lists as values for each key:
+    
+    ```python
+    empty_dict = {
+        "COLUMN_NAME": [],
+        "NOM_EXPLICIT": [],
+        "DATA_TYPE": [],
+        "TABLE_NAME_CUBE": [],
+        "CUBE_NAME": [],
+        "CATALOG_NAME": [],
+        "VIEW_NAME": [],
+        "TABLE_NAME_INFOCENTRE": [],
+        "DATABASE_NAME_INFOCENTRE": [],
+        "SERVEUR_INFOCENTRE": [],
+        "COLUMN_NAME_ERP": [],
+        "TABLE_NAME_ERP": [],
+        "DATABASE_NAME_ERP": [],
+        "ERP_NAME": [],
+        "EXPRESSION": [],
+        "DEFINITION": [],
+        "LIAISON": []
+    }
+    ```
+    
+    You can use this dictionary as a starting point and populate the lists with values as needed in your code."""
+
+    example_prompt = """Perfect, now I want you to fill each list with elements. Some lists will have values given from an SQL Query. The ones that do not, should still be filled with the same amount of elements but their values will be "".
+
+    The extraction of values for these lists will take place as follows:
+    
+    Example 1:
+    SQL Query :    
+    select TABLE_NAME as Contenant, COLUMN_NAME, Cube 
+    from INFORMATION_SCHEMA.COLUMNS"""
 
     example_resp = """
     I count 3 columns so the list length of each key must be 3 
