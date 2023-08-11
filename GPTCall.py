@@ -2,9 +2,11 @@
 import pandas as pd
 import json
 import os
+import time
 
 
 dash_line = "\n"+"-"*100+"\n"
+model_name = "text-davinci-003"
 
 def get_keys(path):
     with open(path) as f:
@@ -19,13 +21,14 @@ api_key = get_keys("C:/Users/La_Nopoly/Desktop/API.json")["DICO_KEY"]
 
 
 # Function to interact with ChatGPT
-def get_model_response(prompt, max_tokens=600):
+def get_model_response(prompt, max_tokens=1500):
     openai.api_key = api_key
     response = openai.Completion.create(
-        engine="text-davinci-003",  # You can also try "text-davinci-003" or other engines
+        engine=model_name,  # You can also try "text-davinci-003" or other engines
         prompt=prompt,
         max_tokens=max_tokens,
     )
+    print("Nbr TOKENS: ",response["usage"]["total_tokens"])
     return response.choices[0].text.strip()
 
 def response_as_dict(model_response):
@@ -56,7 +59,7 @@ def main(SQL_Query):
     SQL Query :    
     select TABLE_NAME as Contenant, COLUMN_NAME, Cube 
     from INFORMATION_SCHEMA.COLUMNS
-
+    .05
     I count 3 columns so the list length of each key must be 3 
 
     {{"COLUMN_NAME":["","",""],"NOM_EXPLICIT":["","",""],"DATA_TYPE":["","",""],"TABLE_NAME_CUBE":["","",""],"CUBE_NAME":["","",""],"CATALOG_NAME":["","",""],"VIEW_NAME":["","",""],"TABLE_NAME_INFOCENTRE":["","",""],"DATABASE_NAME_INFOCENTRE":["","",""],"SERVEUR_INFOCENTRE":["","",""],"COLUMN_NAME_ERP":["TABLE_NAME","COLUMN_NAME","Cube"],"TABLE_NAME_ERP":["COLUMNS","COLUMNS","COLUMNS"],"DATABASE_NAME_ERP":["INFORMATION_SCHEMA","INFORMATION_SCHEMA","INFORMATION_SCHEMA",],"ERP_NAME":["","",""],"EXPRESSION":["","",""],"DEFINITION":["","",""],"LIAISON":["","",""],"MAPPING":["Contenant","",""]}}
@@ -87,9 +90,17 @@ def main(SQL_Query):
  
 
 if __name__ == "__main__":
+
+    #print( [f["id"] for f in get_keys("models.json")["data"]])
+
     queries = get_keys("Queries.json")["SQL_QUERY"]
-    for query in queries: 
+    count = 0
+    for query in queries:
+        count+=1
+        print(count)
         main(query)
+        time.sleep(3)
+        
     
 
  
