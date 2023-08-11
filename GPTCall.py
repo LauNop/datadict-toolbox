@@ -63,12 +63,8 @@ def main(SQL_Query):
     {SQL_Query}
     """
 
-    example_prompt = """
-     Extract information from an SQL query:
-
-    SQL Query :    
-    select TABLE_NAME as Contenant, COLUMN_NAME, Cube 
-    from INFORMATION_SCHEMA.COLUMNS
+    dict_prompt = """
+     Create a dictionary with the following Keys:"COLUMN_NAME","NOM_EXPLICIT","DATA_TYPE","TABLE_NAME_CUBE","CUBE_NAME","CATALOG_NAME","VIEW_NAME","TABLE_NAME_INFOCENTRE","DATABASE_NAME_INFOCENTRE","SERVEUR_INFOCENTRE","COLUMN_NAME_ERP","TABLE_NAME_ERP","DATABASE_NAME_ERP","ERP_NAME","EXPRESSION","DEFINITION","LIAISON". The keys' values should be empty lists.
     """
 
     example_resp = """
