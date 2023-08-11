@@ -3,6 +3,8 @@ import pandas as pd
 import json
 
 
+dash_line = "\n"+"-"*100+"\n"
+
 def get_keys(path):
     with open(path) as f:
         return json.load(f)
@@ -29,7 +31,7 @@ def chat_with_gpt3(prompt, max_tokens=400):
 
 def main(SQL_Query):
     # Fill in your question for ChatGPT here
-    chat_prompt = f"""
+    prompt = f"""
     Extract information from an SQL query as follows:
 
     Example 1:
@@ -37,9 +39,18 @@ def main(SQL_Query):
     select TABLE_NAME as Contenant, COLUMN_NAME, Cube 
     from INFORMATION_SCHEMA.COLUMNS
 
-    structure = {{"Alias":["Contenant","",""],"COLUMN":["TABLE_NAME","COLUMN_NAME","Cube"],"TABLE":["COLUMNS","COLUMNS","COLUMNS"],"DATABASE":["INFORMATION_SCHEMA","INFORMATION_SCHEMA","INFORMATION_SCHEMA",]}}
+    I count 3 columns so the list length of each keys must be 3 
 
-    You should know that this data will become a pandas DataFrame. We want it to have these columns in order : COLUMN_NAME (Alias),	NOM_EXPLICIT (Empty),	DATA_TYPE (Empty),	TABLE_NAME_CUBE (Empty),	CUBE_NAME (Empty),	CATALOG_NAME (Empty),	VIEW_NAME (Empty),	TABLE_NAME_INFOCENTRE (Empty),	DATABASE_NAME_INFOCENTRE (Empty),	SERVEUR_INFOCENTRE (Empty),	COLUMN_NAME_ERP (COLUMN),	TABLE_NAME_ERP (TABLE),	DATABASE_NAME_ERP (DATABASE),	ERP_NAME (Empty),	EXPRESSION (Empty),	DEFINITION (Empty),	LIAISON (Alias)
+    {{"Alias":["Contenant","",""],"COLUMN":["TABLE_NAME","COLUMN_NAME","Cube"],"TABLE":["COLUMNS","COLUMNS","COLUMNS"],"DATABASE":["INFORMATION_SCHEMA","INFORMATION_SCHEMA","INFORMATION_SCHEMA",]}}
+
+    Example 2:
+    SQL Query :    
+    select AvionID, Pilote as Employee, Cargo as nbr_passengers, APT as aeroport 
+    from AVION
+
+    I count 4 columns so the list length of each keys must be 4 
+
+    {{"Alias":["","Employee","nbr_passengers","aeroport],"COLUMN":["AvionID","Pilote","Cargo","APT"],"TABLE":["AVION","AVION","AVION","AVION"],"DATABASE":["Unknown","Unknown","Unknown","Unknown"]}}
 
     Complete this one
     SQL Query:
@@ -51,18 +62,21 @@ def main(SQL_Query):
  
 
     # Get response from ChatGPT
-    gpt3_response = chat_with_gpt3(chat_prompt)
+    model_response = chat_with_gpt3(prompt)
 
- 
+    print(model_response)
+    print(dash_line)
 
-    # Print ChatGPT's response
-    #print("ChatGPT:", gpt3_response)
+    model_response = model_response[model_response.index('{'):]
 
- 
+    print(model_response)
+
+
+
+    model_tab_response = json.loads(model_response)  
 
     # Save ChatGPT's response to an Excel file
-    data = {'Response': [gpt3_response]}
-    df = pd.DataFrame(data)
+    df = pd.DataFrame(model_tab_response)
     df.to_excel('chatgpt_response.xlsx', index=False)
 
  
