@@ -1,5 +1,7 @@
 import os
+import Extract
 
+"""
 with open(".env", "r") as f:
     for line in f.readlines():
         try:
@@ -8,6 +10,7 @@ with open(".env", "r") as f:
         except ValueError:
             # syntax error
             pass
+"""
 
 if __name__ == "__main__":
     print("Hello World")
