@@ -87,8 +87,9 @@ def main(SQL_Query):
  
 
 if __name__ == "__main__":
-    query = get_keys("C:/Users/La_Nopoly/source/repos/ExtractFromDTSX/ExtractFromDTSX/Query.json")["SQL_QUERY"][0]
-    main(query)
+    queries = get_keys("Queries.json")["SQL_QUERY"]
+    for query in queries: 
+        main(query)
     
 
  
