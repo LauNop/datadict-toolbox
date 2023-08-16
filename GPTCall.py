@@ -45,8 +45,10 @@ def get_data_from_response(model_response):
     model_response = model_response[model_response.index('{'):]
     print(model_response)
     data = json.loads(model_response)
-    for key, value in data.items():
-        if len(value)!=col_nbr: data[key]=data[key][:-1]
+    if len(data["COLUMN_NAME_ERP"])!= col_nbr: data['COLUMN_NAME_ERP']=data['COLUMN_NAME_ERP'][:col_nbr]
+    if len(data["MAPPING"])!= col_nbr: data['MAPPING']=data['MAPPING'][:col_nbr]
+    data["TABLE_NAME_ERP"]= [data["TABLE_NAME_ERP"] for i in range(col_nbr)]
+    data["DATABASE_NAME_ERP"]= [data["DATABASE_NAME_ERP"] for i in range(col_nbr)]
     return data, col_nbr
 
 def save_to_excel(dictionary,excel_repo = "erp_result.xlsx"):
@@ -72,7 +74,7 @@ def main(SQL_Query):
     
     ["TABLE_NAME","COLUMN_NAME","Cube"]
 
-    {{"COLUMN_NAME_ERP":["TABLE_NAME","COLUMN_NAME","Cube"],"TABLE_NAME_ERP":["COLUMNS","COLUMNS","COLUMNS"],"DATABASE_NAME_ERP":["INFORMATION_SCHEMA","INFORMATION_SCHEMA","INFORMATION_SCHEMA",],"MAPPING":["Contenant","",""]}}
+    {{"COLUMN_NAME_ERP":["TABLE_NAME","COLUMN_NAME","Cube"],"TABLE_NAME_ERP":"COLUMNS","DATABASE_NAME_ERP":"INFORMATION_SCHEMA","MAPPING":["Contenant","",""]}}
     
     Example 2:
     SQL Query :    
@@ -81,7 +83,7 @@ def main(SQL_Query):
 
     ["AvionID","Pilote","Cargo","APT"]
 
-    {{"COLUMN_NAME_ERP":["AvionID","Pilote","Cargo","APT"],"TABLE_NAME_ERP":["AVION","AVION","AVION","AVION"],"DATABASE_NAME_ERP":["Unknown","Unknown","Unknown","Unknown"],"MAPPING":["","Employee","nbr_passengers","aeroport"]}}
+    {{"COLUMN_NAME_ERP":["AvionID","Pilote","Cargo","APT"],"TABLE_NAME_ERP":"AVION","DATABASE_NAME_ERP":"Unknown","MAPPING":["","Employee","nbr_passengers","aeroport"]}}
 
     Example 3:
     SQL Query :
@@ -90,7 +92,7 @@ def main(SQL_Query):
 
     ["cast(VIP||ECO||INTERMED as nvarchar2(20))","Train","cast(MotMod as nvarchar2(50))"]
 
-    {{"COLUMN_NAME_ERP":["cast(VIP||ECO||INTERMED as nvarchar2(20))","Train","cast(MotMod as nvarchar2(50))"],"TABLE_NAME_ERP":["INTERN_DATA","INTERN_DATA","INTERN_DATA"],"DATABASE_NAME_ERP":["CARGO","CARGO","CARGO"],"MAPPING":["Passenger","","Moteur"]}}
+    {{"COLUMN_NAME_ERP":["cast(VIP||ECO||INTERMED as nvarchar2(20))","Train","cast(MotMod as nvarchar2(50))"],"TABLE_NAME_ERP":"INTERN_DATA","DATABASE_NAME_ERP":"CARGO","MAPPING":["Passenger","","Moteur"]}}
 
     Complete this one
     SQL Query:
@@ -122,15 +124,13 @@ if __name__ == "__main__":
     file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
     #get_keys("Queries.json")["SQL_QUERY"]
 
-    queries = EFD.extract_erp_query(file_names)["SQL_QUERY"][0]
-    print()
-    main(queries)
-    #count = 0
-    #for query in queries:
-    #    count+=1
-    #    print(count)
-    #    main(query)
-    #    time.sleep(3)
+    queries = EFD.extract_erp_query(file_names)["SQL_QUERY"]
+    count = 0
+    for query in queries:
+        count+=1
+        print(count)
+        main(query)
+        time.sleep(3)
         
     
 
