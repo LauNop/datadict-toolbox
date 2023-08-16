@@ -133,6 +133,7 @@ if __name__ == "__main__":
         count+=1
         print(count,":",file_names[count-1])
         main(query)
+        print(dash_line)
         time.sleep(3)
         
     
