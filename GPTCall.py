@@ -33,13 +33,15 @@ def get_model_response(prompt, max_tokens=1500):
     print("Nbr TOKENS: ",response["usage"]["total_tokens"])
     return response.choices[0].text.strip()
 
-def response_as_dict(model_response):
-    print(model_response)
+def get_data_from_response(model_response):
+    print("MODEL RESPONSE :\n",model_response)
+    print(dash_line)
+    column = model_response[model_response.index('['):model_response.index('{')]
+    print(type(column),column)
     print(dash_line)
     model_response = model_response[model_response.index('{'):]
     print(model_response)
-    print(dash_line)
-    return json.loads(model_response)  
+    return json.loads(model_response)
 
 def save_to_excel(dictionary,excel_repo = "erp_result.xlsx"):
     path = f"{excel_repo}"
@@ -53,7 +55,7 @@ def save_to_excel(dictionary,excel_repo = "erp_result.xlsx"):
         df.to_excel(f"{excel_repo}", index=False)
 
 def main(SQL_Query):
-    # Fill in your question for ChatGPT here
+    # Fill in your question for the text model LLM
     prompt = f"""
     Extract information from an SQL query as follows:
 
@@ -61,33 +63,32 @@ def main(SQL_Query):
     SQL Query :    
     select TABLE_NAME as Contenant, COLUMN_NAME, Cube 
     from INFORMATION_SCHEMA.COLUMNS
-    .05
-    I count 3 columns so the list length of each key must be 3 
+    
+    [TABLE_NAME,COLUMN_NAME,Cube]
 
-    {{"COLUMN_NAME":["","",""],"NOM_EXPLICIT":["","",""],"DATA_TYPE":["","",""],"TABLE_NAME_CUBE":["","",""],"CUBE_NAME":["","",""],"CATALOG_NAME":["","",""],"VIEW_NAME":["","",""],"TABLE_NAME_INFOCENTRE":["","",""],"DATABASE_NAME_INFOCENTRE":["","",""],"SERVEUR_INFOCENTRE":["","",""],"COLUMN_NAME_ERP":["TABLE_NAME","COLUMN_NAME","Cube"],"TABLE_NAME_ERP":["COLUMNS","COLUMNS","COLUMNS"],"DATABASE_NAME_ERP":["INFORMATION_SCHEMA","INFORMATION_SCHEMA","INFORMATION_SCHEMA",],"ERP_NAME":["","",""],"EXPRESSION":["","",""],"DEFINITION":["","",""],"LIAISON":["","",""],"MAPPING":["Contenant","",""]}}
+    {{"COLUMN_NAME_ERP":["TABLE_NAME","COLUMN_NAME","Cube"],"TABLE_NAME_ERP":["COLUMNS","COLUMNS","COLUMNS"],"DATABASE_NAME_ERP":["INFORMATION_SCHEMA","INFORMATION_SCHEMA","INFORMATION_SCHEMA",],"MAPPING":["Contenant","",""]}}
     
     Example 2:
     SQL Query :    
     select AvionID, Pilote as Employee, Cargo as nbr_passengers, APT as aeroport 
     from AVION
 
-    I count 4 columns so the list length of each key must be 4 
+    [AvionID,Pilote,Cargo,APT]
 
-    {{"COLUMN_NAME":["","","",""],"NOM_EXPLICIT":["","","",""],"DATA_TYPE":["","","",""],"TABLE_NAME_CUBE":["","","",""],"CUBE_NAME":["","","",""],"CATALOG_NAME":["","","",""],"VIEW_NAME":["","","",""],"TABLE_NAME_INFOCENTRE":["","","",""],"DATABASE_NAME_INFOCENTRE":["","","",""],"SERVEUR_INFOCENTRE":["","","",""],"COLUMN_NAME_ERP":["AvionID","Pilote","Cargo","APT"],"TABLE_NAME_ERP":["AVION","AVION","AVION","AVION"],"DATABASE_NAME_ERP":["Unknown","Unknown","Unknown","Unknown"],"ERP_NAME":["","","",""],"EXPRESSION":["","","",""],"DEFINITION":["","","",""],"LIAISON":["","","",""],,"MAPPING":["","Employee","nbr_passengers","aeroport]}}
+    {{"COLUMN_NAME_ERP":["AvionID","Pilote","Cargo","APT"],"TABLE_NAME_ERP":["AVION","AVION","AVION","AVION"],"DATABASE_NAME_ERP":["Unknown","Unknown","Unknown","Unknown"],"MAPPING":["","Employee","nbr_passengers","aeroport]}}
 
     Complete this one
     SQL Query:
     {SQL_Query}
-
-    
     """
 
- 
+    print("SQL QUERY :\n",SQL_Query)
+    print(dash_line)
 
     # Get response from ChatGPT
-    data = response_as_dict(get_model_response(prompt))
+    data =get_data_from_response(get_model_response(prompt))
 
-    save_to_excel(data)
+    #save_to_excel(data)
 
  
 
@@ -98,13 +99,15 @@ if __name__ == "__main__":
     file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
     #get_keys("Queries.json")["SQL_QUERY"]
 
-    queries = EFD.extract_erp_query(file_names)["SQL_QUERY"]
-    count = 0
-    for query in queries:
-        count+=1
-        print(count)
-        main(query)
-        time.sleep(3)
+    queries = EFD.extract_erp_query(file_names)["SQL_QUERY"][0]
+    print()
+    main(queries)
+    #count = 0
+    #for query in queries:
+    #    count+=1
+    #    print(count)
+    #    main(query)
+    #    time.sleep(3)
         
     
 
