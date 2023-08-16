@@ -1,5 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 
+from re import L
 import xml.etree.ElementTree as ET
 import os
 import json
@@ -14,6 +15,7 @@ def dtsx_open(file_path):
 
 def extract_erp_query(file_path_list):
     erp_query = {"DEST_TABLE":[],"SQL_QUERY":[]}
+    print("File list:")
     for file_path in file_path_list:
         root, namespace = dtsx_open(file_path)
         new_values = []
@@ -97,11 +99,11 @@ def extract_variable(file_path):
 
     return variable
 
-def saveAsJson(dictionary,json_file_name):
+def saveAsJson(dictionary,json_file_name = "Queries.json"):
     with open(json_file_name,"w",encoding="utf-8") as json_file :
         json.dump(dictionary, json_file,ensure_ascii=False,indent=4)
-
         return json.dumps(dictionary)
+    
     
 file1 = "C:/Users/La_Nopoly/Desktop/TestExtract/DTSX/DimActionCo.dtsx"
 file2 = "C:/Users/La_Nopoly/Desktop/TestExtract/DTSX/DimArticles.dtsx"
@@ -116,7 +118,7 @@ if __name__ == "__main__":
     print(extract_ssis_mapping(file_names[0]))
     print(extract_variable(file_names[0]))
     
-    saveAsJson(extract_erp_query(file_names),"Queries.json")
+    saveAsJson(extract_erp_query(file_names))
 
     #print(dico)
     #print(len(dico))
