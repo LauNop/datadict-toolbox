@@ -4,11 +4,13 @@ import json
 import os
 import time
 
+from ExtractFromDTSX import extract_erp_query, saveAsJson
+
 
 dash_line = "\n"+"-"*100+"\n"
 model_name = "text-davinci-003"
 
-def get_keys(path):
+def extract_from_json(path):
     with open(path) as f:
         return json.load(f)
 
@@ -16,7 +18,7 @@ def get_keys(path):
 #SQL_Query = get_keys("C:/Users/La_Nopoly/source/repos/ExtractFromDTSX/SQL_Query.json")["Query"]
 
 # Set your OpenAI GPT-3 API key here
-api_key = get_keys("C:/Users/La_Nopoly/Desktop/API.json")["DICO_KEY"]
+api_key = extract_from_json("C:/Users/La_Nopoly/Desktop/API.json")["DICO_KEY"]
 
 
 
@@ -90,10 +92,13 @@ def main(SQL_Query):
  
 
 if __name__ == "__main__":
+    import ExtractFromDTSX as EFD
 
-    #print( [f["id"] for f in get_keys("models.json")["data"]])
+    folder_path = "C:/Users/La_Nopoly/Desktop/TestExtract/DTSX"
+    file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
+    #get_keys("Queries.json")["SQL_QUERY"]
 
-    queries = get_keys("Queries.json")["SQL_QUERY"]
+    queries = EFD.extract_erp_query(file_names)["SQL_QUERY"]
     count = 0
     for query in queries:
         count+=1
