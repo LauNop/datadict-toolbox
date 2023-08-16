@@ -37,11 +37,17 @@ def get_data_from_response(model_response):
     print("MODEL RESPONSE :\n",model_response)
     print(dash_line)
     column = model_response[model_response.index('['):model_response.index('{')]
+    column = json.loads(column)
     print(type(column),column)
+    col_nbr = len(column)
+    print("Nbr_column:",col_nbr)
     print(dash_line)
     model_response = model_response[model_response.index('{'):]
     print(model_response)
-    return json.loads(model_response)
+    data = json.loads(model_response)
+    for key, value in data.items():
+        if len(value)!=col_nbr: data[key]=data[key][:-1]
+    return data, col_nbr
 
 def save_to_excel(dictionary,excel_repo = "erp_result.xlsx"):
     path = f"{excel_repo}"
@@ -95,9 +101,17 @@ def main(SQL_Query):
     print(dash_line)
 
     # Get response from ChatGPT
-    data =get_data_from_response(get_model_response(prompt))
+    data, col_nbr =get_data_from_response(get_model_response(prompt))
 
-    #save_to_excel(data)
+    print(dash_line)
+
+    dictionary = dict.fromkeys(["COLUMN_NAME","NOM_EXPLICIT",	"DATA_TYPE","TABLE_NAME_CUBE","CUBE_NAME","CATALOG_NAME","VIEW_NAME","TABLE_NAME_INFOCENTRE","DATABASE_NAME_INFOCENTRE","SERVER_INFOCENTRE","COLUMN_NAME_ERP","TABLE_NAME_ERP","DATABASE_NAME_ERP","SERVER_NAME_ERP","EXPRESSION","DEFINITION","LIAISON","MAPPING"],["" for i in range(col_nbr)])
+    for key,value in data.items():
+        dictionary[key] = value
+    print(dictionary)
+
+
+    save_to_excel(dictionary)
 
  
 
