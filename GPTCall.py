@@ -6,7 +6,7 @@ import time
 
 
 dash_line = "\n"+"-"*100+"\n"
-model_name = "gpt-3.5-turbo"
+model_name = "text-davinci-003"
 
 def get_keys(path):
     with open(path) as f:
@@ -21,26 +21,20 @@ api_key = get_keys("C:/Users/La_Nopoly/Desktop/API.json")["DICO_KEY"]
 
 
 # Function to interact with ChatGPT
-def get_model_response(prompt,example_prompt,example_resp,expl2_p,expl2_r, max_tokens=1500):
+def get_model_response(prompt, max_tokens=1500):
     openai.api_key = api_key
-    response = openai.ChatCompletion.create(
-        model=model_name,  # You can also try "text-davinci-003" or other engines
-        messages=[
-            {"role":"system","content":"You extract information from a SQL query"},
-            {"role":"user","content":example_prompt},
-            {"role":"assistant","content":example_resp},
-            {"role":"user","content":expl2_p},
-            {"role":"assistant","content":expl2_r},
-            {"role":"user","content":prompt}
-        ],
+    response = openai.Completion.create(
+        engine=model_name,  # You can also try "text-davinci-003" or other engines
+        prompt=prompt,
+        max_tokens=max_tokens,
     )
     print("Nbr TOKENS: ",response["usage"]["total_tokens"])
-    return response["choices"][0]["message"]["content"]
+    return response.choices[0].text.strip()
 
 def response_as_dict(model_response):
     print(model_response)
     print(dash_line)
-    model_response = model_response[model_response.index('{'):model_response.index("}")+1]
+    model_response = model_response[model_response.index('{'):]
     print(model_response)
     print(dash_line)
     return json.loads(model_response)  
@@ -59,40 +53,37 @@ def save_to_excel(dictionary,excel_repo = "erp_result.xlsx"):
 def main(SQL_Query):
     # Fill in your question for ChatGPT here
     prompt = f"""
-    SQL Query:
-    {SQL_Query}
-    """
+    Extract information from an SQL query as follows:
 
-    example_prompt = """
-     Extract information from an SQL query:
-
+    Example 1:
     SQL Query :    
     select TABLE_NAME as Contenant, COLUMN_NAME, Cube 
     from INFORMATION_SCHEMA.COLUMNS
-    """
-
-    example_resp = """
+    .05
     I count 3 columns so the list length of each key must be 3 
 
-    {"COLUMN_NAME":["","",""],"NOM_EXPLICIT":["","",""],"DATA_TYPE":["","",""],"TABLE_NAME_CUBE":["","",""],"CUBE_NAME":["","",""],"CATALOG_NAME":["","",""],"VIEW_NAME":["","",""],"TABLE_NAME_INFOCENTRE":["","",""],"DATABASE_NAME_INFOCENTRE":["","",""],"SERVEUR_INFOCENTRE":["","",""],"COLUMN_NAME_ERP":["TABLE_NAME","COLUMN_NAME","Cube"],"TABLE_NAME_ERP":["COLUMNS","COLUMNS","COLUMNS"],"DATABASE_NAME_ERP":["INFORMATION_SCHEMA","INFORMATION_SCHEMA","INFORMATION_SCHEMA",],"ERP_NAME":["","",""],"EXPRESSION":["","",""],"DEFINITION":["","",""],"LIAISON":["","",""],"MAPPING":["Contenant","",""]}
-
-    """
-    expl2_p="""
+    {{"COLUMN_NAME":["","",""],"NOM_EXPLICIT":["","",""],"DATA_TYPE":["","",""],"TABLE_NAME_CUBE":["","",""],"CUBE_NAME":["","",""],"CATALOG_NAME":["","",""],"VIEW_NAME":["","",""],"TABLE_NAME_INFOCENTRE":["","",""],"DATABASE_NAME_INFOCENTRE":["","",""],"SERVEUR_INFOCENTRE":["","",""],"COLUMN_NAME_ERP":["TABLE_NAME","COLUMN_NAME","Cube"],"TABLE_NAME_ERP":["COLUMNS","COLUMNS","COLUMNS"],"DATABASE_NAME_ERP":["INFORMATION_SCHEMA","INFORMATION_SCHEMA","INFORMATION_SCHEMA",],"ERP_NAME":["","",""],"EXPRESSION":["","",""],"DEFINITION":["","",""],"LIAISON":["","",""],"MAPPING":["Contenant","",""]}}
+    
+    Example 2:
     SQL Query :    
     select AvionID, Pilote as Employee, Cargo as nbr_passengers, APT as aeroport 
     from AVION
-    """
-    expl2_r = """
+
     I count 4 columns so the list length of each key must be 4 
 
-    {"COLUMN_NAME":["","","",""],"NOM_EXPLICIT":["","","",""],"DATA_TYPE":["","","",""],"TABLE_NAME_CUBE":["","","",""],"CUBE_NAME":["","","",""],"CATALOG_NAME":["","","",""],"VIEW_NAME":["","","",""],"TABLE_NAME_INFOCENTRE":["","","",""],"DATABASE_NAME_INFOCENTRE":["","","",""],"SERVEUR_INFOCENTRE":["","","",""],"MAPPING":["","Employee","nbr_passengers","aeroport],"COLUMN_NAME_ERP":["AvionID","Pilote","Cargo","APT"],"TABLE_NAME_ERP":["AVION","AVION","AVION","AVION"],"DATABASE_NAME_ERP":["Unknown","Unknown","Unknown","Unknown"],"ERP_NAME":["","","",""],"EXPRESSION":["","","",""],"DEFINITION":["","","",""],"LIAISON":["","","",""]}
+    {{"COLUMN_NAME":["","","",""],"NOM_EXPLICIT":["","","",""],"DATA_TYPE":["","","",""],"TABLE_NAME_CUBE":["","","",""],"CUBE_NAME":["","","",""],"CATALOG_NAME":["","","",""],"VIEW_NAME":["","","",""],"TABLE_NAME_INFOCENTRE":["","","",""],"DATABASE_NAME_INFOCENTRE":["","","",""],"SERVEUR_INFOCENTRE":["","","",""],"COLUMN_NAME_ERP":["AvionID","Pilote","Cargo","APT"],"TABLE_NAME_ERP":["AVION","AVION","AVION","AVION"],"DATABASE_NAME_ERP":["Unknown","Unknown","Unknown","Unknown"],"ERP_NAME":["","","",""],"EXPRESSION":["","","",""],"DEFINITION":["","","",""],"LIAISON":["","","",""],,"MAPPING":["","Employee","nbr_passengers","aeroport]}}
 
+    Complete this one
+    SQL Query:
+    {SQL_Query}
+
+    
     """
 
  
 
     # Get response from ChatGPT
-    data = response_as_dict(get_model_response(prompt,example_prompt,example_resp,expl2_p,expl2_r))
+    data = response_as_dict(get_model_response(prompt))
 
     save_to_excel(data)
 
@@ -108,7 +99,7 @@ if __name__ == "__main__":
         count+=1
         print(count)
         main(query)
-        time.sleep(1)
+        time.sleep(3)
         
     
 
