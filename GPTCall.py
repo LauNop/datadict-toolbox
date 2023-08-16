@@ -37,18 +37,21 @@ def get_data_from_response(model_response):
     print("MODEL RESPONSE :\n",model_response)
     print(dash_line)
     column = model_response[model_response.index('['):model_response.index('{')]
-    column = json.loads(column)
+    print(type(column),column)
+    print(dash_line)
+    print("After strip:",column.replace("\n",""))
+    column = json.loads(column.strip())
     print(type(column),column)
     col_nbr = len(column)
     print("Nbr_column:",col_nbr)
     print(dash_line)
     model_response = model_response[model_response.index('{'):]
-    print(model_response)
     data = json.loads(model_response)
     if len(data["COLUMN_NAME_ERP"])!= col_nbr: data['COLUMN_NAME_ERP']=data['COLUMN_NAME_ERP'][:col_nbr]
     if len(data["MAPPING"])!= col_nbr: data['MAPPING']=data['MAPPING'][:col_nbr]
     data["TABLE_NAME_ERP"]= [data["TABLE_NAME_ERP"] for i in range(col_nbr)]
     data["DATABASE_NAME_ERP"]= [data["DATABASE_NAME_ERP"] for i in range(col_nbr)]
+    print(data)
     return data, col_nbr
 
 def save_to_excel(dictionary,excel_repo = "erp_result.xlsx"):
@@ -128,7 +131,7 @@ if __name__ == "__main__":
     count = 0
     for query in queries:
         count+=1
-        print(count)
+        print(count,":",file_names[count-1])
         main(query)
         time.sleep(3)
         
