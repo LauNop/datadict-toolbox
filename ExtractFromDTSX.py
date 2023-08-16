@@ -13,14 +13,14 @@ def dtsx_open(file_path):
     tree = ET.parse(file_path)
     return tree.getroot(),  "{www.microsoft.com/SqlServer/Dts}"
 
-def extract_erp_query(file_path_list):
+def extract_erp_query(file_path_list,print_files=0):
     erp_query = {"DEST_TABLE":[],"SQL_QUERY":[]}
     print("File list:")
     for file_path in file_path_list:
         root, namespace = dtsx_open(file_path)
         new_values = []
 
-        print(root.attrib.get("{}ObjectName".format(namespace)))
+        if print_files : print(root.attrib.get("{}ObjectName".format(namespace)))
         executables = root.findall(".//{}Executables".format(namespace))[0]
         executable_list = executables.findall("{}Executable".format(namespace))
         for element in executable_list:

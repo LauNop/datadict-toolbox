@@ -64,7 +64,7 @@ def main(SQL_Query):
     select TABLE_NAME as Contenant, COLUMN_NAME, Cube 
     from INFORMATION_SCHEMA.COLUMNS
     
-    [TABLE_NAME,COLUMN_NAME,Cube]
+    ["TABLE_NAME","COLUMN_NAME","Cube"]
 
     {{"COLUMN_NAME_ERP":["TABLE_NAME","COLUMN_NAME","Cube"],"TABLE_NAME_ERP":["COLUMNS","COLUMNS","COLUMNS"],"DATABASE_NAME_ERP":["INFORMATION_SCHEMA","INFORMATION_SCHEMA","INFORMATION_SCHEMA",],"MAPPING":["Contenant","",""]}}
     
@@ -73,9 +73,18 @@ def main(SQL_Query):
     select AvionID, Pilote as Employee, Cargo as nbr_passengers, APT as aeroport 
     from AVION
 
-    [AvionID,Pilote,Cargo,APT]
+    ["AvionID","Pilote","Cargo","APT"]
 
-    {{"COLUMN_NAME_ERP":["AvionID","Pilote","Cargo","APT"],"TABLE_NAME_ERP":["AVION","AVION","AVION","AVION"],"DATABASE_NAME_ERP":["Unknown","Unknown","Unknown","Unknown"],"MAPPING":["","Employee","nbr_passengers","aeroport]}}
+    {{"COLUMN_NAME_ERP":["AvionID","Pilote","Cargo","APT"],"TABLE_NAME_ERP":["AVION","AVION","AVION","AVION"],"DATABASE_NAME_ERP":["Unknown","Unknown","Unknown","Unknown"],"MAPPING":["","Employee","nbr_passengers","aeroport"]}}
+
+    Example 3:
+    SQL Query :
+    select cast(VIP||ECO||INTERMED as nvarchar2(20)) as Passenger, Train, cast(MotMod as nvarchar2(50))as Moteur
+    from CARGO.INTERN_DATA
+
+    ["cast(VIP||ECO||INTERMED as nvarchar2(20))","Train","cast(MotMod as nvarchar2(50))"]
+
+    {{"COLUMN_NAME_ERP":["cast(VIP||ECO||INTERMED as nvarchar2(20))","Train","cast(MotMod as nvarchar2(50))"],"TABLE_NAME_ERP":["INTERN_DATA","INTERN_DATA","INTERN_DATA"],"DATABASE_NAME_ERP":["CARGO","CARGO","CARGO"],"MAPPING":["Passenger","","Moteur"]}}
 
     Complete this one
     SQL Query:
