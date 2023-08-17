@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 import time
 
-load_dotenv()
+load_dotenv(".env")
 
 openai.organization = "org-5wlnguNXWQIr7Jufj0TpmNXq"
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -35,16 +35,16 @@ def get_model_response(prompt, max_tokens=1500):
 
 def get_data_from_response(model_response):
     print("MODEL RESPONSE :\n",model_response)
-    print(dash_line)
+    print(DASH_LINE)
     column = model_response[model_response.index('['):model_response.index('{')]
     print(type(column),column)
-    print(dash_line)
+    print(DASH_LINE)
     print("After strip:",column.replace("\n",""))
-    column = json.loads(column.strip())
+    column = json.loads(column)
     print(type(column),column)
     col_nbr = len(column)
     print("Nbr_column:",col_nbr)
-    print(dash_line)
+    print(DASH_LINE)
     model_response = model_response[model_response.index('{'):]
     data = json.loads(model_response)
     if len(data["COLUMN_NAME_ERP"])!= col_nbr: data['COLUMN_NAME_ERP']=data['COLUMN_NAME_ERP'][:col_nbr]
@@ -103,14 +103,14 @@ def main(SQL_Query):
     """
 
     print("SQL QUERY :\n",SQL_Query)
-    print(dash_line)
+    print(DASH_LINE)
 
     # Get response from ChatGPT
     data, col_nbr =get_data_from_response(get_model_response(prompt))
 
-    print(dash_line)
+    print(DASH_LINE)
 
-    dictionary = dict.fromkeys(["COLUMN_NAME","NOM_EXPLICIT",	"DATA_TYPE","TABLE_NAME_CUBE","CUBE_NAME","CATALOG_NAME","VIEW_NAME","TABLE_NAME_INFOCENTRE","DATABASE_NAME_INFOCENTRE","SERVER_INFOCENTRE","COLUMN_NAME_ERP","TABLE_NAME_ERP","DATABASE_NAME_ERP","SERVER_NAME_ERP","EXPRESSION","DEFINITION","LIAISON","MAPPING"],["" for i in range(col_nbr)])
+    dictionary = dict.fromkeys(["COLUMN_NAME","NOM_EXPLICIT","DATA_TYPE","TABLE_NAME_CUBE","CUBE_NAME","CATALOG_NAME","VIEW_NAME","TABLE_NAME_INFOCENTRE","DATABASE_NAME_INFOCENTRE","SERVER_INFOCENTRE","COLUMN_NAME_ERP","TABLE_NAME_ERP","DATABASE_NAME_ERP","SERVER_NAME_ERP","EXPRESSION","DEFINITION","LIAISON","MAPPING"],["" for i in range(col_nbr)])
     for key,value in data.items():
         dictionary[key] = value
     print(dictionary)
@@ -133,7 +133,7 @@ if __name__ == "__main__":
         count+=1
         print(count,":",file_names[count-1])
         main(query)
-        print(dash_line)
+        print(DASH_LINE)
         time.sleep(3)
         
     
