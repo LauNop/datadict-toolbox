@@ -1,26 +1,24 @@
 ﻿# -*- coding: utf-8 -*-
 
-from re import L
 import xml.etree.ElementTree as ET
 import os
 import json
 
-repo = "C:/Users/La_Nopoly/Desktop/TestExtract/Excel/ExcelResults/"
-dash_line = "\n"+"-"*100+"\n"
+DASH_LINE = os.getenv("DASH_LINE")
 
 
 def dtsx_open(file_path):
     tree = ET.parse(file_path)
     return tree.getroot(),  "{www.microsoft.com/SqlServer/Dts}"
 
-def extract_erp_query(file_path_list):
+def extract_erp_query(file_path_list,print_files=0):
     erp_query = {"DEST_TABLE":[],"SQL_QUERY":[]}
     print("File list:")
     for file_path in file_path_list:
         root, namespace = dtsx_open(file_path)
         new_values = []
 
-        print(root.attrib.get("{}ObjectName".format(namespace)))
+        if print_files : print(root.attrib.get("{}ObjectName".format(namespace)))
         executables = root.findall(".//{}Executables".format(namespace))[0]
         executable_list = executables.findall("{}Executable".format(namespace))
         for element in executable_list:
@@ -104,17 +102,13 @@ def saveAsJson(dictionary,json_file_name = "Queries.json"):
         json.dump(dictionary, json_file,ensure_ascii=False,indent=4)
         return json.dumps(dictionary)
     
-    
-file1 = "C:/Users/La_Nopoly/Desktop/TestExtract/DTSX/DimActionCo.dtsx"
-file2 = "C:/Users/La_Nopoly/Desktop/TestExtract/DTSX/DimArticles.dtsx"
-
 # Appel de la fonction en fournissant le chemin vers le fichier .dtsx
 if __name__ == "__main__":
     folder_path = "C:/Users/La_Nopoly/Desktop/TestExtract/DTSX"
     file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
     print(file_names)
     print(len(file_names))
-    print(dash_line)
+    print(DASH_LINE)
     print(extract_ssis_mapping(file_names[0]))
     print(extract_variable(file_names[0]))
     
