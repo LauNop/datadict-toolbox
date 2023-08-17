@@ -34,7 +34,8 @@ def get_data_from_response(model_response):
     column = model_response[model_response.index('['):model_response.index('{')]
     print(type(column),column)
     print(V.DASH_LINE)
-    print("After strip:",column.replace("\n",""))
+    column = column.replace("\n","")
+    print("After strip:",column)
     column = json.loads(column)
     print(type(column),column)
     col_nbr = len(column)
@@ -42,6 +43,8 @@ def get_data_from_response(model_response):
     print(V.DASH_LINE)
     model_response = model_response[model_response.index('{'):]
     data = json.loads(model_response)
+    print("Model dict :", model_response)
+    print(V.DASH_LINE)
     if len(data["COLUMN_NAME_ERP"])!= col_nbr: data['COLUMN_NAME_ERP']=data['COLUMN_NAME_ERP'][:col_nbr]
     if len(data["MAPPING"])!= col_nbr: data['MAPPING']=data['MAPPING'][:col_nbr]
     data["TABLE_NAME_ERP"]= [data["TABLE_NAME_ERP"] for i in range(col_nbr)]
@@ -49,9 +52,9 @@ def get_data_from_response(model_response):
     print(data)
     return data, col_nbr
 
-def save_to_excel(dictionary,excel_repo = "erp_result.xlsx"):
+def save_to_excel(dictionary,excel_repo = "{}erp_result.xlsx".format(V.EXCEL_REPO)):
     path = f"{excel_repo}"
-    if(os.path.exists(path)):
+    if os.path.exists(path):
         new_df = pd.DataFrame(dictionary)
         existing_df = pd.read_excel(path)
         combined_df = pd.concat([existing_df, new_df], ignore_index=True)
