@@ -3,8 +3,7 @@ import json
 import pandas as pd
 import os
 
-EXCEL_REPO = os.getenv("EXCEL_REPO")
-XMLA_FOLDER = os.getenv("XMLA_FOLDER")
+import envVar as V
 
 def extract_cube_structure(file_path,tabular = True,src_database="MTQ_BRI_GCO"):
     cube_struct = {"COLUMN_NAME":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"EXPRESSION":[],"IS_VISIBLE":[],"DIMENSION_NAME":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
@@ -78,7 +77,7 @@ def extract_cube_structure(file_path,tabular = True,src_database="MTQ_BRI_GCO"):
     return cube_struct
 
 def saveAsXLSX(dictionary,excel_file_name = 'cubes.xlsx'):
-    path = f"{EXCEL_REPO}{excel_file_name}"
+    path = f"{V.EXCEL_REPO}{excel_file_name}"
     if(os.path.exists(path)):
         new_df = pd.DataFrame(dictionary)
         existing_df = pd.read_excel(path)
@@ -86,11 +85,11 @@ def saveAsXLSX(dictionary,excel_file_name = 'cubes.xlsx'):
         combined_df.to_excel(path, index=False)
     else:
         df = pd.DataFrame(dictionary)
-        df.to_excel(f"{EXCEL_REPO}{excel_file_name}", index=False)
+        df.to_excel(f"{V.EXCEL_REPO}{excel_file_name}", index=False)
 
 if __name__ == "__main__":
 
-   folder_path = XMLA_FOLDER
+   folder_path = V.XMLA_FOLDER
    file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
    print(file_names)
    for file_path in file_names :
