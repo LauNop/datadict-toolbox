@@ -1,6 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
 
-from re import L
 import xml.etree.ElementTree as ET
 import os
 import json
