@@ -2,17 +2,12 @@
 import pandas as pd
 import json
 import os
-from dotenv import load_dotenv
 import time
 
-load_dotenv(".env")
+import envVar as V
 
 openai.organization = "org-5wlnguNXWQIr7Jufj0TpmNXq"
 openai.api_key = os.getenv("OPENAI_API_KEY")
-
-DTSX_FOLDER = os.getenv("DTSX_FOLDER")
-DASH_LINE = os.getenv("DASH_LINE")
-
 
 model_name = "text-davinci-003"
 
@@ -35,16 +30,16 @@ def get_model_response(prompt, max_tokens=1500):
 
 def get_data_from_response(model_response):
     print("MODEL RESPONSE :\n",model_response)
-    print(DASH_LINE)
+    print(V.DASH_LINE)
     column = model_response[model_response.index('['):model_response.index('{')]
     print(type(column),column)
-    print(DASH_LINE)
+    print(V.DASH_LINE)
     print("After strip:",column.replace("\n",""))
     column = json.loads(column)
     print(type(column),column)
     col_nbr = len(column)
     print("Nbr_column:",col_nbr)
-    print(DASH_LINE)
+    print(V.DASH_LINE)
     model_response = model_response[model_response.index('{'):]
     data = json.loads(model_response)
     if len(data["COLUMN_NAME_ERP"])!= col_nbr: data['COLUMN_NAME_ERP']=data['COLUMN_NAME_ERP'][:col_nbr]
@@ -103,12 +98,12 @@ def main(SQL_Query):
     """
 
     print("SQL QUERY :\n",SQL_Query)
-    print(DASH_LINE)
+    print(V.DASH_LINE)
 
     # Get response from ChatGPT
     data, col_nbr =get_data_from_response(get_model_response(prompt))
 
-    print(DASH_LINE)
+    print(V.DASH_LINE)
 
     dictionary = dict.fromkeys(["COLUMN_NAME","NOM_EXPLICIT","DATA_TYPE","TABLE_NAME_CUBE","CUBE_NAME","CATALOG_NAME","VIEW_NAME","TABLE_NAME_INFOCENTRE","DATABASE_NAME_INFOCENTRE","SERVER_INFOCENTRE","COLUMN_NAME_ERP","TABLE_NAME_ERP","DATABASE_NAME_ERP","SERVER_NAME_ERP","EXPRESSION","DEFINITION","LIAISON","MAPPING"],["" for i in range(col_nbr)])
     for key,value in data.items():
@@ -123,7 +118,7 @@ def main(SQL_Query):
 if __name__ == "__main__":
     import ExtractFromDTSX as EFD
 
-    folder_path = DTSX_FOLDER
+    folder_path = V.DTSX_FOLDER
     file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
     #get_keys("Queries.json")["SQL_QUERY"]
 
@@ -133,7 +128,7 @@ if __name__ == "__main__":
         count+=1
         print(count,":",file_names[count-1])
         main(query)
-        print(DASH_LINE)
+        print(V.DASH_LINE)
         time.sleep(3)
         
     
