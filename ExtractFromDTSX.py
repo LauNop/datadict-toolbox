@@ -1,12 +1,10 @@
 ﻿# -*- coding: utf-8 -*-
 
-from re import L
 import xml.etree.ElementTree as ET
 import os
 import json
 
-repo = "C:/Users/La_Nopoly/Desktop/TestExtract/Excel/ExcelResults/"
-dash_line = "\n"+"-"*100+"\n"
+DASH_LINE = os.getenv("DASH_LINE")
 
 
 def dtsx_open(file_path):
@@ -104,17 +102,13 @@ def saveAsJson(dictionary,json_file_name = "Queries.json"):
         json.dump(dictionary, json_file,ensure_ascii=False,indent=4)
         return json.dumps(dictionary)
     
-    
-file1 = "C:/Users/La_Nopoly/Desktop/TestExtract/DTSX/DimActionCo.dtsx"
-file2 = "C:/Users/La_Nopoly/Desktop/TestExtract/DTSX/DimArticles.dtsx"
-
 # Appel de la fonction en fournissant le chemin vers le fichier .dtsx
 if __name__ == "__main__":
     folder_path = "C:/Users/La_Nopoly/Desktop/TestExtract/DTSX"
     file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
     print(file_names)
     print(len(file_names))
-    print(dash_line)
+    print(DASH_LINE)
     print(extract_ssis_mapping(file_names[0]))
     print(extract_variable(file_names[0]))
     

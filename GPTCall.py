@@ -2,29 +2,29 @@
 import pandas as pd
 import json
 import os
+from dotenv import load_dotenv
 import time
 
-from ExtractFromDTSX import extract_erp_query, saveAsJson
+load_dotenv()
+
+openai.organization = "org-5wlnguNXWQIr7Jufj0TpmNXq"
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+DTSX_FOLDER = os.getenv("DTSX_FOLDER")
+DASH_LINE = os.getenv("DASH_LINE")
 
 
-dash_line = "\n"+"-"*100+"\n"
 model_name = "text-davinci-003"
 
 def extract_from_json(path):
     with open(path) as f:
         return json.load(f)
 
-# Retrieve SQL Query that will serve as input
-#SQL_Query = get_keys("C:/Users/La_Nopoly/source/repos/ExtractFromDTSX/SQL_Query.json")["Query"]
-
-# Set your OpenAI GPT-3 API key here
-api_key = extract_from_json("C:/Users/La_Nopoly/Desktop/API.json")["DICO_KEY"]
 
 
 
 # Function to interact with ChatGPT
 def get_model_response(prompt, max_tokens=1500):
-    openai.api_key = api_key
     response = openai.Completion.create(
         engine=model_name,  # You can also try "text-davinci-003" or other engines
         prompt=prompt,
@@ -123,7 +123,7 @@ def main(SQL_Query):
 if __name__ == "__main__":
     import ExtractFromDTSX as EFD
 
-    folder_path = "C:/Users/La_Nopoly/Desktop/TestExtract/DTSX"
+    folder_path = DTSX_FOLDER
     file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
     #get_keys("Queries.json")["SQL_QUERY"]
 
