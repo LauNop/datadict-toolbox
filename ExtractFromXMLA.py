@@ -5,7 +5,7 @@ import os
 
 import envVar as V
 
-def extract_cube_structure(file_path,tabular = True,src_database="MTQ_BRI_GCO"):
+def extract_cube_structure(file_path,src_database,tabular = True):
 
     # Structure de dictionnaire en sortie
     cube_struct = {"COLUMN_NAME":[],"NOM_EXPLICIT":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"EXPRESSION":[],"IS_VISIBLE":[],"DIMENSION_NAME":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
@@ -109,4 +109,4 @@ if __name__ == "__main__":
    file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
    print(file_names)
    for file_path in file_names :
-       saveAsXLSX(extract_cube_structure(file_path))
+       saveAsXLSX(extract_cube_structure(file_path,"MTQ_BRI_CAI"))
