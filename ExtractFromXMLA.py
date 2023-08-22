@@ -8,7 +8,7 @@ import envVar as V
 def extract_cube_structure(file_path,tabular = True,src_database="MTQ_BRI_GCO"):
 
     # Structure de dictionnaire en sortie
-    cube_struct = {"COLUMN_NAME":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"EXPRESSION":[],"IS_VISIBLE":[],"DIMENSION_NAME":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
+    cube_struct = {"COLUMN_NAME":[],"NOM_EXPLICIT":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"EXPRESSION":[],"IS_VISIBLE":[],"DIMENSION_NAME":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
 
     # Variable de manipulation
     data = ""
@@ -63,12 +63,12 @@ def extract_cube_structure(file_path,tabular = True,src_database="MTQ_BRI_GCO"):
             expression = column['expression']
             src = ""
         else:
-            expression = 'None'
+            expression = ''
             src_column = column['sourceColumn']
             src = src_column+'/'+src_table+'/'+src_database
         
          
-        new_values = [column['name'],column['dataType'],calculated,measure,expression,visible,dimension,cube,catalog,src]
+        new_values = [column['name'],"",column['dataType'],calculated,measure,expression,visible,dimension,cube,catalog,src]
         for key, value in zip(cube_struct.keys(), new_values):
             cube_struct[key].append(value)
     
@@ -86,7 +86,7 @@ def extract_cube_structure(file_path,tabular = True,src_database="MTQ_BRI_GCO"):
                visible = 1
             
             expression = measure_['expression']
-            new_values = [measure_['name'],'measure',calculated,measure,expression,visible,dimension,cube,catalog,""]
+            new_values = [measure_['name'],"",'measure',calculated,measure,expression,visible,dimension,cube,catalog,""]
             for key, value in zip(cube_struct.keys(), new_values):
                 cube_struct[key].append(value)
 
