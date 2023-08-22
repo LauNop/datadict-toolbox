@@ -6,33 +6,47 @@ import os
 import envVar as V
 
 def extract_cube_structure(file_path,tabular = True,src_database="MTQ_BRI_GCO"):
+
+    # Structure de dictionnaire en sortie
     cube_struct = {"COLUMN_NAME":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"EXPRESSION":[],"IS_VISIBLE":[],"DIMENSION_NAME":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
+
+    # Variable de manipulation
     data = ""
     new_values = []
     src_table = ""
     src_column = ""
 
+    # Ouverture du fichier .xmla et récupération des données dans data
     with open(file_path, 'r', encoding = 'utf-8') as file:
         json_content = file.read()
         data = json.loads(json_content)
     file.close()
+
+    # Etapes de récupération des différentes clé du dictionnaire
     
+    # CATALOG_NAME
     catalog = data['create']['parentObject']['database']
 
+    #CUBE_NAME
     if tabular:
         cube = 'Modèle'
     else:
-        print('Problème')
+        print('Error: Nom CUBE')
 
     table_dict = data['create']['table']
+
+    # DIMENSION_NAME
     dimension = table_dict['name'] 
 
     annotations = table_dict['annotations']
     for annotation in annotations:
         if annotation['name'] == '_TM_ExtProp_DbTableName':
+            # src_table portion de SOURCE
             src_table = annotation['value']
     
+    # Récupération des colonnes classiques
     measure = 0
+    # COLUMN_NAME, DATA_TYPE, IS_CALCULATED, IS_MEASURE, EXPRESSION, IS_VISIBLE
     columns = table_dict['columns']
     for column in columns:
         keys = list(column.keys())
@@ -52,11 +66,13 @@ def extract_cube_structure(file_path,tabular = True,src_database="MTQ_BRI_GCO"):
             expression = 'None'
             src_column = column['sourceColumn']
             src = src_column+'/'+src_table+'/'+src_database
-            
+        
+         
         new_values = [column['name'],column['dataType'],calculated,measure,expression,visible,dimension,cube,catalog,src]
         for key, value in zip(cube_struct.keys(), new_values):
             cube_struct[key].append(value)
-
+    
+    # Récupération des colonnes Measures
     calculated = 0
     measure = 1
     if "measures" in list(table_dict.keys()):
