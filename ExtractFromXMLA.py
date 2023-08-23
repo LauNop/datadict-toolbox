@@ -2,6 +2,7 @@
 import json
 import pandas as pd
 import os
+import re
 
 import envVar as V
 
@@ -91,7 +92,8 @@ def extract_cube_tabular_structure(file_path,src_database):
 
 def extract_cube_multidim_structure(file_path):
     # Structure de dictionnaire en sortie
-    cube_struct = {"COLUMN_NAME":[],"NOM_EXPLICIT":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"EXPRESSION":[],"IS_VISIBLE":[],"DIMENSION_NAME":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
+    cube_struct = {"COLUMN_NAME":[],"NOM_EXPLICIT":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"IS_DIMENSION":[],"EXPRESSION":[],"IS_VISIBLE":[],"GROUP":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
+
 
     # Variable de manipulation
     data = ""
@@ -104,14 +106,52 @@ def extract_cube_multidim_structure(file_path):
     root = tree.getroot()
     namespace = "{http://schemas.microsoft.com/analysisservices/2003/engine}"
     database_elmt = root.find(".//{}ObjectDefinition".format(namespace)).find("{}Database".format(namespace))
-    print(database_elmt.find("{}Name".format(namespace)).text)
 
     # CATALOG_NAME
-    #catalog = xml_object.find("Name").text
-    #
-    #dim = xml_object.find("Dimensions").find("Dimension")
-    #
-    #print(catalog,dim.find("ID").text)
+    catalog  = database_elmt.find("{}Name".format(namespace)).text
+
+    # Récupérer les dimensions à la source
+    dims = database_elmt.find("{}Dimensions".format(namespace)).findall("{}Dimension".format(namespace))
+
+    # Récupérer les cubes
+    cubes = database_elmt.find("{}Cubes".format(namespace)).findall("{}Cube".format(namespace))
+
+    # Récupérer les infos des dimensions utilisées par chaque cube
+    measure = 0
+    expression = ""
+    for cube in cubes:
+        cube_name = cube.find("{}Name".format(namespace)).text
+        print("CUBE: ",cube_name)
+        c_dims = cube.find("{}Dimensions".format(namespace)).findall("{}Dimension".format(namespace))
+        for c_dim in c_dims:
+            group_name = c_dim.find("{}Name".format(namespace)).text
+            print("Dimension : ",group_name)
+            attribs = c_dim.find("{}Attributes".format(namespace)).findall("{}Attribute".format(namespace))
+            for attrib in attribs:
+                column_name = attrib.find("{}AttributeID".format(namespace)).text
+                print("attribut : ",column_name)
+                new_values = [column_name,"","wip","wip",measure,expression,"wip",group_name,cube_name,catalog,"wip"]
+                for key, value in zip(cube_struct.keys(), new_values):
+                    cube_struct[key].append(value)
+
+    print(cube_struct)
+
+
+
+
+    #Récupérer les dimensions utilisés par chaque cube
+    #cubes.cube.find(DImensions)
+
+    # Récupérer la datasource
+    str_datasource = database_elmt.find("{}DataSources".format(namespace)).find("{}DataSource".format(namespace)).find("{}ConnectionString".format(namespace)).text
+    # Traitement de str_datasource pour récupérer l'IP serveur et l'Initial Catalog
+    str_datasource = str_datasource.split(";")
+    for str_el in str_datasource:
+        if re.match(r"^Data Source.*",str_el):
+            serv = str_el[str_el.index("=")+1:]
+        if re.match(r"^Initial Catalog",str_el):
+            src_database = str_el[str_el.index("=")+1:]
+    
 
 def saveAsXLSX(dictionary,excel_file_name = 'cubes.xlsx'):
     path = f"{V.EXCEL_REPO}{excel_file_name}"
