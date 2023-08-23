@@ -102,11 +102,9 @@ def extract_cube_multidim_structure(file_path):
     # Ouverture du fichier .xmla et récupération des données dans data
     tree = ET.parse(file_path)
     root = tree.getroot()
-    print('{}')
-    print(type(root.tag),root.tag)
-    print("XMLNS:",root[0].tag)
-    print(root[0][0].tag,root[0][0].attrib)
-    print(root[0][0][0].text)    
+    namespace = "{http://schemas.microsoft.com/analysisservices/2003/engine}"
+    database_elmt = root.find(".//{}ObjectDefinition".format(namespace)).find("{}Database".format(namespace))
+    print(database_elmt.find("{}Name".format(namespace)).text)
 
     # CATALOG_NAME
     #catalog = xml_object.find("Name").text
