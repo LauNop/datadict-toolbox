@@ -140,7 +140,7 @@ def extract_cube_multidim_structure(file_path):
             attribs = c_dim.find("{}Attributes".format(namespace)).findall("{}Attribute".format(namespace))
             for attrib in attribs:
                 column_name = attrib.find("{}AttributeID".format(namespace)).text
-                new_values = [column_name,"","wip","wip",is_measure,expression,"wip",group_name,cube_name,catalog,"wip"]
+                new_values = [column_name,"","wip","wip",is_measure,1,expression,"wip",group_name,cube_name,catalog,"wip"]
                 for key, value in zip(cube_struct.keys(), new_values):
                     cube_struct[key].append(value)
         
@@ -155,22 +155,19 @@ def extract_cube_multidim_structure(file_path):
                 print("     Attribut : ",column_name)
                 data_type = measure.find("{}DataType".format(namespace)).text
                 source= measure.find("{}Source".format(namespace))
-                src_table = source.find("{}Source".format(namespace)).find("{}TableID".format(namespace)).text
+                sub_source = source.find("{}Source".format(namespace))
+                src_table = sub_source.find("{}TableID".format(namespace)).text
                 print("         SRC_TABLE : ",src_table)
-                src_column = source.find("{}Source".format(namespace)).find("{}ColumnID".format(namespace)).text
+                if sub_source.attrib.get("{http://www.w3.org/2001/XMLSchema-instance}type") == "ColumnBinding":
+                    src_column = sub_source.find("{}ColumnID".format(namespace)).text
+                else:
+                    src_column = ""
                 print("         SRC_COLUMN : ",src_column)
-                new_values = [column_name,"",data_type,"wip",is_measure,expression,"wip",group_name,cube_name,catalog,f"{src_column}/{src_table}/{src_database}/{src_serv}"]
+                new_values = [column_name,"",data_type,"wip",is_measure,0,expression,"wip",group_name,cube_name,catalog,f"{src_column}/{src_table}/{src_database}/{src_serv}"]
                 for key, value in zip(cube_struct.keys(), new_values):
                     cube_struct[key].append(value)
 
-    print(cube_struct)
-
-
-
-
-    #Récupérer les dimensions utilisés par chaque cube
-    #cubes.cube.find(DImensions)
-
+    return cube_struct
     
 
 def saveAsXLSX(dictionary,excel_file_name = 'cubes.xlsx'):
@@ -191,5 +188,5 @@ if __name__ == "__main__":
    print(file_names)
    for file_path in file_names :
    #    saveAsXLSX(extract_cube_structure(file_path,"MTQ_BRI_CAI"))
-        extract_cube_multidim_structure(file_path)
+        saveAsXLSX(extract_cube_multidim_structure(file_path),"cubes_multidim.xlsx")
 
