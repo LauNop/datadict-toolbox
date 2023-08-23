@@ -5,7 +5,7 @@ import os
 
 import envVar as V
 
-def extract_cube_structure(file_path,src_database,tabular = True):
+def extract_cube_tabular_structure(file_path,src_database):
 
     # Structure de dictionnaire en sortie
     cube_struct = {"COLUMN_NAME":[],"NOM_EXPLICIT":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"EXPRESSION":[],"IS_VISIBLE":[],"DIMENSION_NAME":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
@@ -28,10 +28,7 @@ def extract_cube_structure(file_path,src_database,tabular = True):
     catalog = data['create']['parentObject']['database']
 
     #CUBE_NAME
-    if tabular:
-        cube = 'Modèle'
-    else:
-        print('Error: Nom CUBE')
+    cube = 'Modèle'
 
     table_dict = data['create']['table']
 
@@ -92,6 +89,32 @@ def extract_cube_structure(file_path,src_database,tabular = True):
 
     return cube_struct
 
+def extract_cube_multidim_structure(file_path):
+    # Structure de dictionnaire en sortie
+    cube_struct = {"COLUMN_NAME":[],"NOM_EXPLICIT":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"EXPRESSION":[],"IS_VISIBLE":[],"DIMENSION_NAME":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
+
+    # Variable de manipulation
+    data = ""
+    new_values = []
+    src_table = ""
+    src_column = ""
+
+    # Ouverture du fichier .xmla et récupération des données dans data
+    tree = ET.parse(file_path)
+    root = tree.getroot()
+    print('{}')
+    print(type(root.tag),root.tag)
+    print("XMLNS:",root[0].tag)
+    print(root[0][0].tag,root[0][0].attrib)
+    print(root[0][0][0].text)    
+
+    # CATALOG_NAME
+    #catalog = xml_object.find("Name").text
+    #
+    #dim = xml_object.find("Dimensions").find("Dimension")
+    #
+    #print(catalog,dim.find("ID").text)
+
 def saveAsXLSX(dictionary,excel_file_name = 'cubes.xlsx'):
     path = f"{V.EXCEL_REPO}{excel_file_name}"
     if(os.path.exists(path)):
@@ -109,4 +132,6 @@ if __name__ == "__main__":
    file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
    print(file_names)
    for file_path in file_names :
-       saveAsXLSX(extract_cube_structure(file_path,"MTQ_BRI_CAI"))
+   #    saveAsXLSX(extract_cube_structure(file_path,"MTQ_BRI_CAI"))
+        extract_cube_multidim_structure(file_path)
+
