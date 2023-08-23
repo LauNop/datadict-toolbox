@@ -110,6 +110,17 @@ def extract_cube_multidim_structure(file_path):
     # CATALOG_NAME
     catalog  = database_elmt.find("{}Name".format(namespace)).text
 
+    # Récupérer la datasource
+    str_datasource = database_elmt.find("{}DataSources".format(namespace)).find("{}DataSource".format(namespace)).find("{}ConnectionString".format(namespace)).text
+    # Traitement de str_datasource pour récupérer l'IP serveur et l'Initial Catalog
+    str_datasource = str_datasource.split(";")
+    for str_el in str_datasource:
+        if re.match(r"^Data Source.*",str_el):
+            src_serv = str_el[str_el.index("=")+1:]
+        if re.match(r"^Initial Catalog",str_el):
+            src_database = str_el[str_el.index("=")+1:]
+
+
     # Récupérer les dimensions à la source
     dims = database_elmt.find("{}Dimensions".format(namespace)).findall("{}Dimension".format(namespace))
 
@@ -117,20 +128,38 @@ def extract_cube_multidim_structure(file_path):
     cubes = database_elmt.find("{}Cubes".format(namespace)).findall("{}Cube".format(namespace))
 
     # Récupérer les infos des dimensions utilisées par chaque cube
-    measure = 0
+    
     expression = ""
     for cube in cubes:
         cube_name = cube.find("{}Name".format(namespace)).text
         print("CUBE: ",cube_name)
+        is_measure = 0
         c_dims = cube.find("{}Dimensions".format(namespace)).findall("{}Dimension".format(namespace))
         for c_dim in c_dims:
             group_name = c_dim.find("{}Name".format(namespace)).text
-            print("Dimension : ",group_name)
             attribs = c_dim.find("{}Attributes".format(namespace)).findall("{}Attribute".format(namespace))
             for attrib in attribs:
                 column_name = attrib.find("{}AttributeID".format(namespace)).text
-                print("attribut : ",column_name)
-                new_values = [column_name,"","wip","wip",measure,expression,"wip",group_name,cube_name,catalog,"wip"]
+                new_values = [column_name,"","wip","wip",is_measure,expression,"wip",group_name,cube_name,catalog,"wip"]
+                for key, value in zip(cube_struct.keys(), new_values):
+                    cube_struct[key].append(value)
+        
+        is_measure = 1
+        measure_groups = cube.find("{}MeasureGroups".format(namespace)).findall("{}MeasureGroup".format(namespace))
+        for measure_group in measure_groups :
+            group_name = measure_group.find("{}Name".format(namespace)).text
+            print(" GROUP : ",group_name)
+            measures = measure_group.find("{}Measures".format(namespace)).findall("{}Measure".format(namespace))
+            for measure in measures :
+                column_name = measure.find("{}Name".format(namespace)).text
+                print("     Attribut : ",column_name)
+                data_type = measure.find("{}DataType".format(namespace)).text
+                source= measure.find("{}Source".format(namespace))
+                src_table = source.find("{}Source".format(namespace)).find("{}TableID".format(namespace)).text
+                print("         SRC_TABLE : ",src_table)
+                src_column = source.find("{}Source".format(namespace)).find("{}ColumnID".format(namespace)).text
+                print("         SRC_COLUMN : ",src_column)
+                new_values = [column_name,"",data_type,"wip",is_measure,expression,"wip",group_name,cube_name,catalog,f"{src_column}/{src_table}/{src_database}/{src_serv}"]
                 for key, value in zip(cube_struct.keys(), new_values):
                     cube_struct[key].append(value)
 
@@ -142,15 +171,6 @@ def extract_cube_multidim_structure(file_path):
     #Récupérer les dimensions utilisés par chaque cube
     #cubes.cube.find(DImensions)
 
-    # Récupérer la datasource
-    str_datasource = database_elmt.find("{}DataSources".format(namespace)).find("{}DataSource".format(namespace)).find("{}ConnectionString".format(namespace)).text
-    # Traitement de str_datasource pour récupérer l'IP serveur et l'Initial Catalog
-    str_datasource = str_datasource.split(";")
-    for str_el in str_datasource:
-        if re.match(r"^Data Source.*",str_el):
-            serv = str_el[str_el.index("=")+1:]
-        if re.match(r"^Initial Catalog",str_el):
-            src_database = str_el[str_el.index("=")+1:]
     
 
 def saveAsXLSX(dictionary,excel_file_name = 'cubes.xlsx'):
