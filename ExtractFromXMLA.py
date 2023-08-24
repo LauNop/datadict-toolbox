@@ -134,17 +134,19 @@ def extract_cube_multidim_structure(file_path):
         cube_name = cube.find("{}Name".format(namespace)).text
         print("CUBE: ",cube_name)
         is_measure = 0
+        is_dimension = 1
         c_dims = cube.find("{}Dimensions".format(namespace)).findall("{}Dimension".format(namespace))
         for c_dim in c_dims:
             group_name = c_dim.find("{}Name".format(namespace)).text
             attribs = c_dim.find("{}Attributes".format(namespace)).findall("{}Attribute".format(namespace))
             for attrib in attribs:
                 column_name = attrib.find("{}AttributeID".format(namespace)).text
-                new_values = [column_name,"","wip","wip",is_measure,1,expression,"wip",group_name,cube_name,catalog,"wip"]
+                new_values = [column_name,"","wip","wip",is_measure,is_dimension,expression,"wip",group_name,cube_name,catalog,"wip"]
                 for key, value in zip(cube_struct.keys(), new_values):
                     cube_struct[key].append(value)
         
         is_measure = 1
+        is_dimension = 0
         measure_groups = cube.find("{}MeasureGroups".format(namespace)).findall("{}MeasureGroup".format(namespace))
         for measure_group in measure_groups :
             group_name = measure_group.find("{}Name".format(namespace)).text
@@ -163,7 +165,7 @@ def extract_cube_multidim_structure(file_path):
                 else:
                     src_column = ""
                 print("         SRC_COLUMN : ",src_column)
-                new_values = [column_name,"",data_type,"wip",is_measure,0,expression,"wip",group_name,cube_name,catalog,f"{src_column}/{src_table}/{src_database}/{src_serv}"]
+                new_values = [column_name,"",data_type,"wip",is_measure,is_dimension,expression,"wip",group_name,cube_name,catalog,f"{src_column}/{src_table}/{src_database}/{src_serv}"]
                 for key, value in zip(cube_struct.keys(), new_values):
                     cube_struct[key].append(value)
 
