@@ -105,6 +105,11 @@ def getDatasource(database_elmt,namespace):
             src_database = str_el[str_el.index("=")+1:]
     return src_database, src_serv
 
+def getDimCatalog(database_elmt,namespace):
+    # Récupérer les dimensions à la source
+    dimensions = database_elmt.find("{}Dimensions".format(namespace)).findall("{}Dimension".format(namespace))
+
+    return dimensions
 
 # Extract from multidim
 def extract_cube_multidim_structure(file_path):
@@ -120,10 +125,9 @@ def extract_cube_multidim_structure(file_path):
     # CATALOG_NAME
     catalog  = database_elmt.find("{}Name".format(namespace)).text
 
-    src_database, src_serv = getDatasource(database_elmt,namespace)
+    src_database, src_serv = getDatasource(database_elmt, namespace)
 
-    # Récupérer les dimensions à la source
-    dims = database_elmt.find("{}Dimensions".format(namespace)).findall("{}Dimension".format(namespace))
+    dims = getDimCatalog(database_elmt, namespace)
 
     # Récupérer les cubes
     cubes = database_elmt.find("{}Cubes".format(namespace)).findall("{}Cube".format(namespace))
