@@ -193,7 +193,7 @@ def cubesStructure(database_elmt, cube_struct, namespace):
     return cube_struct
 
 # Extract from multidim
-def extract_cube_multidim_structure(file_path):
+def extractCubeMultidimStructure(file_path):
     # Structure de dictionnaire en sortie
     cube_struct = {"COLUMN_NAME":[],"NOM_EXPLICIT":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"IS_DIMENSION":[],"EXPRESSION":[],"IS_VISIBLE":[],"GROUP":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
 
@@ -228,5 +228,5 @@ if __name__ == "__main__":
    print(file_names)
    for file_path in file_names :
    #    saveAsXLSX(extract_cube_structure(file_path,"MTQ_BRI_CAI"))
-        saveAsXLSX(extract_cube_multidim_structure(file_path),"cubes_multidim.xlsx")
+        saveAsXLSX(extractCubeMultidimStructure(file_path),"cubes_multidim.xlsx")
 
