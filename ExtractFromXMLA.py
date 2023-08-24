@@ -118,21 +118,23 @@ def getDimCatalog(database_elmt,namespace):
 
     return dimensions
 
-def getDimName(database_elmt,namespace):
+def getDimMetadata(database_elmt,namespace):
     dictionary = {}
     for dimension in getDimCatalog(database_elmt,namespace):
-        dim_name = dimension.find("{}Name".format(namespace)).text
-        sub_dict = {"Attribute":[],"Column":[],"Datatype":[],"Table":[]}
+        dim_name = dimension.find("{}ID".format(namespace)).text
+        sub_dict = {"Attribute_name":[],"Attribute_id":[],"Column":[],"Datatype":[],"Table":[]}
         dictionary[dim_name] = sub_dict
 
         for attribute in dimension.find("{}Attributes".format(namespace)).findall("{}Attribute".format(namespace)):
             attribute_name = attribute.find("{}Name".format(namespace)).text
+            attribute_id = attribute.find("{}ID".format(namespace)).text
             source = attribute.find("{}NameColumn".format(namespace))
             sub_source = source.find("{}Source".format(namespace))
             column_name = sub_source.find("{}ColumnID".format(namespace)).text
             table_name = sub_source.find("{}TableID".format(namespace)).text
             data_type = source.find("{}DataType".format(namespace)).text
-            dictionary[dim_name]["Attribute"].append(attribute_name)
+            dictionary[dim_name]["Attribute_name"].append(attribute_name)
+            dictionary[dim_name]["Attribute_id"].append(attribute_id)
             dictionary[dim_name]["Column"].append(column_name)
             dictionary[dim_name]["Datatype"].append(data_type)
             dictionary[dim_name]["Table"].append(table_name)
@@ -156,7 +158,7 @@ def getCubeName(cube,namespace):
 
     return cube_name
 
-def cubeDimensionsUsage(cube, catalog, cube_struct, namespace):
+def cubeDimensionsUsage(cube, catalog, cube_struct, namespace,src_database,src_serv,database_elmt):
     expression = ""
     cube_name = getCubeName(cube,namespace)
     print("CUBE: ",cube_name)
@@ -165,11 +167,20 @@ def cubeDimensionsUsage(cube, catalog, cube_struct, namespace):
     c_dims = cube.find("{}Dimensions".format(namespace)).findall("{}Dimension".format(namespace))
     for c_dim in c_dims:
         group_name = c_dim.find("{}Name".format(namespace)).text
+        dimension_id = c_dim.find("{}DimensionID".format(namespace)).text
         attribs = c_dim.find("{}Attributes".format(namespace)).findall("{}Attribute".format(namespace))
         for attrib in attribs:
             column_name = attrib.find("{}AttributeID".format(namespace)).text
-            new_values = [column_name,"","wip","wip",is_measure,is_dimension,expression,"wip",group_name,cube_name,catalog,"wip"]
-            cube_struct = insertStructure(cube_struct, new_values)
+            dim_dict = getDimMetadata(database_elmt,namespace)
+            for i in range(len(dim_dict[dimension_id]["Attribute_id"])):
+                print(dim_dict[dimension_id]["Attribute_id"][i],":",group_name,":", column_name,":",dim_dict[dimension_id]["Attribute_id"][i] == column_name)
+                
+                if dim_dict[dimension_id]["Attribute_id"][i] == column_name:
+                    data_type = dim_dict[dimension_id]["Datatype"][i]
+                    src_column = dim_dict[dimension_id]["Column"][i]
+                    src_table = dim_dict[dimension_id]["Table"][i]
+                    new_values = [column_name,"",data_type,"wip",is_measure,is_dimension,expression,"wip",group_name,cube_name,catalog,f"{src_column}/{src_table}/{src_database}/{src_serv}"]
+                    cube_struct = insertStructure(cube_struct, new_values)
 
     return cube_struct
 
@@ -209,7 +220,7 @@ def cubesStructure(database_elmt, cube_struct, namespace):
     # Récupérer les infos des dimensions utilisées par chaque cube
     expression = ""
     for cube in cubes:
-        cube_struct = cubeDimensionsUsage(cube, catalog, cube_struct, namespace)
+        cube_struct = cubeDimensionsUsage(cube, catalog, cube_struct, namespace,src_database,src_serv,database_elmt)
         cube_struct = cubeMeasures(cube, catalog, cube_struct, namespace,src_database,src_serv)
 
     return cube_struct
@@ -217,7 +228,7 @@ def cubesStructure(database_elmt, cube_struct, namespace):
 # Extract from multidim
 def extractCubeMultidimStructure(file_path):
     # Structure de dictionnaire en sortie
-    cube_struct = {"COLUMN_NAME":[],"NOM_EXPLICIT":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"IS_DIMENSION":[],"EXPRESSION":[],"IS_VISIBLE":[],"GROUP":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
+    cube_struct = {"ATTRIBUTE_NAME":[],"NOM_EXPLICIT":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"IS_DIMENSION":[],"EXPRESSION":[],"IS_VISIBLE":[],"GROUP":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
 
     # Ouverture du fichier .xmla et récupération des données dans data
     tree = ET.parse(file_path)
@@ -244,23 +255,10 @@ def saveAsXLSX(dictionary,excel_file_name = 'cubes.xlsx'):
         df.to_excel(f"{V.EXCEL_REPO}{excel_file_name}", index=False)
 
 if __name__ == "__main__":
-    print("Lol")
     folder_path = V.XMLA_FOLDER
     file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
     print(file_names)
     for file_path in file_names :
     #    saveAsXLSX(extract_cube_structure(file_path,"MTQ_BRI_CAI"))
-    #    saveAsXLSX(extractCubeMultidimStructure(file_path),"cubes_multidim.xlsx")
-        
-        tree = ET.parse(file_path)
-        root = tree.getroot()
-        namespace = "{http://schemas.microsoft.com/analysisservices/2003/engine}"
-        database_elmt = root.find(".//{}ObjectDefinition".format(namespace)).find("{}Database".format(namespace))
-        dim_dict = getDimName(database_elmt,namespace)
-        for key, value in dim_dict.items():
-            print(key,":")
-            for sub_key, sub_value in value.items():
-                for element in sub_value:
-                    print("  ",sub_key,":",element)
-
+        saveAsXLSX(extractCubeMultidimStructure(file_path),"cubes_multidim.xlsx")
 

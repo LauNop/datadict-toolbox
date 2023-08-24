@@ -24,14 +24,11 @@ Dupliquer le fichier .env.example
 
 Développement de la solution pour que ExtractFromXMLA.py prenne en charge les cubes multidimensionnelle
 
-To do :
-
-		- Récupérer AttributeID et Column_NAME
-		- Récupérer l'usage des dimensions par measure
-
 ## Roadmap
 
 ### En cours
+
+Vérification de la solution multidim
 
 ### Prévu
 
