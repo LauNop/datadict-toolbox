@@ -134,7 +134,7 @@ def getCubeName(cube,namespace):
 
     return cube_name
 
-def cubeDimensionUsage(cube, catalog, cube_struct, namespace):
+def cubeDimensionsUsage(cube, catalog, cube_struct, namespace):
     expression = ""
     cube_name = getCubeName(cube,namespace)
     print("CUBE: ",cube_name)
@@ -151,6 +151,34 @@ def cubeDimensionUsage(cube, catalog, cube_struct, namespace):
 
     return cube_struct
 
+def cubeMeasures(cube, catalog, cube_struct, namespace, src_database,src_serv):
+    expression = ""
+    cube_name = getCubeName(cube,namespace)
+    is_measure = 1
+    is_dimension = 0
+    measure_groups = cube.find("{}MeasureGroups".format(namespace)).findall("{}MeasureGroup".format(namespace))
+    for measure_group in measure_groups :
+        group_name = measure_group.find("{}Name".format(namespace)).text
+        print(" GROUP : ",group_name)
+        measures = measure_group.find("{}Measures".format(namespace)).findall("{}Measure".format(namespace))
+        for measure in measures :
+            column_name = measure.find("{}Name".format(namespace)).text
+            print("     Attribut : ",column_name)
+            data_type = measure.find("{}DataType".format(namespace)).text
+            source= measure.find("{}Source".format(namespace))
+            sub_source = source.find("{}Source".format(namespace))
+            src_table = sub_source.find("{}TableID".format(namespace)).text
+            print("         SRC_TABLE : ",src_table)
+            if sub_source.attrib.get("{http://www.w3.org/2001/XMLSchema-instance}type") == "ColumnBinding":
+                src_column = sub_source.find("{}ColumnID".format(namespace)).text
+            else:
+                src_column = ""
+            print("         SRC_COLUMN : ",src_column)
+            new_values = [column_name,"",data_type,"wip",is_measure,is_dimension,expression,"wip",group_name,cube_name,catalog,f"{src_column}/{src_table}/{src_database}/{src_serv}"]
+            insertStructure(cube_struct, new_values)
+
+    return cube_struct
+
 def cubesStructure(database_elmt, cube_struct, namespace):
     cubes = getCubes(database_elmt, namespace)
     catalog = getCatalog(database_elmt, namespace)
@@ -159,31 +187,8 @@ def cubesStructure(database_elmt, cube_struct, namespace):
     # Récupérer les infos des dimensions utilisées par chaque cube
     expression = ""
     for cube in cubes:
-        cube_struct = cubeDimensionUsage(cube, catalog, cube_struct, namespace)
-
-        cube_name = getCubeName(cube,namespace)
-        is_measure = 1
-        is_dimension = 0
-        measure_groups = cube.find("{}MeasureGroups".format(namespace)).findall("{}MeasureGroup".format(namespace))
-        for measure_group in measure_groups :
-            group_name = measure_group.find("{}Name".format(namespace)).text
-            print(" GROUP : ",group_name)
-            measures = measure_group.find("{}Measures".format(namespace)).findall("{}Measure".format(namespace))
-            for measure in measures :
-                column_name = measure.find("{}Name".format(namespace)).text
-                print("     Attribut : ",column_name)
-                data_type = measure.find("{}DataType".format(namespace)).text
-                source= measure.find("{}Source".format(namespace))
-                sub_source = source.find("{}Source".format(namespace))
-                src_table = sub_source.find("{}TableID".format(namespace)).text
-                print("         SRC_TABLE : ",src_table)
-                if sub_source.attrib.get("{http://www.w3.org/2001/XMLSchema-instance}type") == "ColumnBinding":
-                    src_column = sub_source.find("{}ColumnID".format(namespace)).text
-                else:
-                    src_column = ""
-                print("         SRC_COLUMN : ",src_column)
-                new_values = [column_name,"",data_type,"wip",is_measure,is_dimension,expression,"wip",group_name,cube_name,catalog,f"{src_column}/{src_table}/{src_database}/{src_serv}"]
-                insertStructure(cube_struct, new_values)
+        cube_struct = cubeDimensionsUsage(cube, catalog, cube_struct, namespace)
+        cube_struct = cubeMeasures(cube, catalog, cube_struct, namespace,src_database,src_serv)
 
     return cube_struct
 
