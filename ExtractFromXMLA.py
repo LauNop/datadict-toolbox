@@ -6,6 +6,8 @@ import re
 
 import envVar as V
 
+
+# Extract from tabular
 def extract_cube_tabular_structure(file_path,src_database):
 
     # Structure de dictionnaire en sortie
@@ -90,16 +92,24 @@ def extract_cube_tabular_structure(file_path,src_database):
 
     return cube_struct
 
+def getDatasource(database_elmt,namespace):
+    # Récupérer la datasource
+    str_datasource = database_elmt.find("{}DataSources".format(namespace)).find("{}DataSource".format(namespace)).find("{}ConnectionString".format(namespace)).text
+
+    # Traitement de str_datasource pour récupérer l'IP serveur et l'Initial Catalog
+    str_datasource = str_datasource.split(";")
+    for str_el in str_datasource:
+        if re.match(r"^Data Source.*",str_el):
+            src_serv = str_el[str_el.index("=")+1:]
+        if re.match(r"^Initial Catalog",str_el):
+            src_database = str_el[str_el.index("=")+1:]
+    return src_database, src_serv
+
+
+# Extract from multidim
 def extract_cube_multidim_structure(file_path):
     # Structure de dictionnaire en sortie
     cube_struct = {"COLUMN_NAME":[],"NOM_EXPLICIT":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"IS_DIMENSION":[],"EXPRESSION":[],"IS_VISIBLE":[],"GROUP":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
-
-
-    # Variable de manipulation
-    data = ""
-    new_values = []
-    src_table = ""
-    src_column = ""
 
     # Ouverture du fichier .xmla et récupération des données dans data
     tree = ET.parse(file_path)
@@ -110,16 +120,7 @@ def extract_cube_multidim_structure(file_path):
     # CATALOG_NAME
     catalog  = database_elmt.find("{}Name".format(namespace)).text
 
-    # Récupérer la datasource
-    str_datasource = database_elmt.find("{}DataSources".format(namespace)).find("{}DataSource".format(namespace)).find("{}ConnectionString".format(namespace)).text
-    # Traitement de str_datasource pour récupérer l'IP serveur et l'Initial Catalog
-    str_datasource = str_datasource.split(";")
-    for str_el in str_datasource:
-        if re.match(r"^Data Source.*",str_el):
-            src_serv = str_el[str_el.index("=")+1:]
-        if re.match(r"^Initial Catalog",str_el):
-            src_database = str_el[str_el.index("=")+1:]
-
+    src_database, src_serv = getDatasource(database_elmt,namespace)
 
     # Récupérer les dimensions à la source
     dims = database_elmt.find("{}Dimensions".format(namespace)).findall("{}Dimension".format(namespace))
