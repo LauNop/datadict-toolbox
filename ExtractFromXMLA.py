@@ -129,6 +129,28 @@ def insertStructure(dictionary,values):
 
     return dictionary
 
+def getCubeName(cube,namespace):
+    cube_name = cube.find("{}Name".format(namespace)).text
+
+    return cube_name
+
+def cubeDimensionUsage(cube, catalog, cube_struct, namespace):
+    expression = ""
+    cube_name = getCubeName(cube,namespace)
+    print("CUBE: ",cube_name)
+    is_measure = 0
+    is_dimension = 1
+    c_dims = cube.find("{}Dimensions".format(namespace)).findall("{}Dimension".format(namespace))
+    for c_dim in c_dims:
+        group_name = c_dim.find("{}Name".format(namespace)).text
+        attribs = c_dim.find("{}Attributes".format(namespace)).findall("{}Attribute".format(namespace))
+        for attrib in attribs:
+            column_name = attrib.find("{}AttributeID".format(namespace)).text
+            new_values = [column_name,"","wip","wip",is_measure,is_dimension,expression,"wip",group_name,cube_name,catalog,"wip"]
+            cube_struct = insertStructure(cube_struct, new_values)
+
+    return cube_struct
+
 def cubesStructure(database_elmt, cube_struct, namespace):
     cubes = getCubes(database_elmt, namespace)
     catalog = getCatalog(database_elmt, namespace)
@@ -137,19 +159,9 @@ def cubesStructure(database_elmt, cube_struct, namespace):
     # Récupérer les infos des dimensions utilisées par chaque cube
     expression = ""
     for cube in cubes:
-        cube_name = cube.find("{}Name".format(namespace)).text
-        print("CUBE: ",cube_name)
-        is_measure = 0
-        is_dimension = 1
-        c_dims = cube.find("{}Dimensions".format(namespace)).findall("{}Dimension".format(namespace))
-        for c_dim in c_dims:
-            group_name = c_dim.find("{}Name".format(namespace)).text
-            attribs = c_dim.find("{}Attributes".format(namespace)).findall("{}Attribute".format(namespace))
-            for attrib in attribs:
-                column_name = attrib.find("{}AttributeID".format(namespace)).text
-                new_values = [column_name,"","wip","wip",is_measure,is_dimension,expression,"wip",group_name,cube_name,catalog,"wip"]
-                insertStructure(cube_struct, new_values)
+        cube_struct = cubeDimensionUsage(cube, catalog, cube_struct, namespace)
 
+        cube_name = getCubeName(cube,namespace)
         is_measure = 1
         is_dimension = 0
         measure_groups = cube.find("{}MeasureGroups".format(namespace)).findall("{}MeasureGroup".format(namespace))
