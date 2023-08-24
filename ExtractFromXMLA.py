@@ -123,7 +123,13 @@ def getCubes(database_elmt,namespace):
     
     return cubes
 
-def cubeStructure(database_elmt, cube_struct, namespace):
+def insertStructure(dictionary,values):
+    for key, value in zip(dictionary.keys(), values):
+        dictionary[key].append(value)
+
+    return dictionary
+
+def cubesStructure(database_elmt, cube_struct, namespace):
     cubes = getCubes(database_elmt, namespace)
     catalog = getCatalog(database_elmt, namespace)
     src_database, src_serv = getDatasource(database_elmt, namespace)
@@ -142,9 +148,8 @@ def cubeStructure(database_elmt, cube_struct, namespace):
             for attrib in attribs:
                 column_name = attrib.find("{}AttributeID".format(namespace)).text
                 new_values = [column_name,"","wip","wip",is_measure,is_dimension,expression,"wip",group_name,cube_name,catalog,"wip"]
-                for key, value in zip(cube_struct.keys(), new_values):
-                    cube_struct[key].append(value)
-        
+                insertStructure(cube_struct, new_values)
+
         is_measure = 1
         is_dimension = 0
         measure_groups = cube.find("{}MeasureGroups".format(namespace)).findall("{}MeasureGroup".format(namespace))
@@ -166,8 +171,7 @@ def cubeStructure(database_elmt, cube_struct, namespace):
                     src_column = ""
                 print("         SRC_COLUMN : ",src_column)
                 new_values = [column_name,"",data_type,"wip",is_measure,is_dimension,expression,"wip",group_name,cube_name,catalog,f"{src_column}/{src_table}/{src_database}/{src_serv}"]
-                for key, value in zip(cube_struct.keys(), new_values):
-                    cube_struct[key].append(value)
+                insertStructure(cube_struct, new_values)
 
     return cube_struct
 
@@ -182,11 +186,9 @@ def extract_cube_multidim_structure(file_path):
     namespace = "{http://schemas.microsoft.com/analysisservices/2003/engine}"
     database_elmt = root.find(".//{}ObjectDefinition".format(namespace)).find("{}Database".format(namespace))
 
-
-
     dims = getDimCatalog(database_elmt, namespace)
     
-    cube_struct = cubeStructure(database_elmt, cube_struct, namespace)
+    cube_struct = cubesStructure(database_elmt, cube_struct, namespace)
 
     return cube_struct
     
