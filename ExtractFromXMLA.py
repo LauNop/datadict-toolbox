@@ -111,6 +111,13 @@ def getDimCatalog(database_elmt,namespace):
 
     return dimensions
 
+def getCubes(database_elmt,namespace):
+    # Récupérer les cubes
+    cubes = database_elmt.find("{}Cubes".format(namespace)).findall("{}Cube".format(namespace))
+    
+    return cubes
+
+
 # Extract from multidim
 def extract_cube_multidim_structure(file_path):
     # Structure de dictionnaire en sortie
@@ -129,9 +136,7 @@ def extract_cube_multidim_structure(file_path):
 
     dims = getDimCatalog(database_elmt, namespace)
 
-    # Récupérer les cubes
-    cubes = database_elmt.find("{}Cubes".format(namespace)).findall("{}Cube".format(namespace))
-
+    cubes = getCubes(database_elmt, namespace)
     # Récupérer les infos des dimensions utilisées par chaque cube
     
     expression = ""
