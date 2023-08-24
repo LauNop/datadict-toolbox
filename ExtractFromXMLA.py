@@ -1,4 +1,5 @@
-﻿import xml.etree.ElementTree as ET
+﻿from cgitb import text
+import xml.etree.ElementTree as ET
 import json
 import pandas as pd
 import os
@@ -117,6 +118,27 @@ def getDimCatalog(database_elmt,namespace):
 
     return dimensions
 
+def getDimName(database_elmt,namespace):
+    dictionary = {}
+    for dimension in getDimCatalog(database_elmt,namespace):
+        dim_name = dimension.find("{}Name".format(namespace)).text
+        sub_dict = {"Attribute":[],"Column":[],"Datatype":[],"Table":[]}
+        dictionary[dim_name] = sub_dict
+
+        for attribute in dimension.find("{}Attributes".format(namespace)).findall("{}Attribute".format(namespace)):
+            attribute_name = attribute.find("{}Name".format(namespace)).text
+            source = attribute.find("{}NameColumn".format(namespace))
+            sub_source = source.find("{}Source".format(namespace))
+            column_name = sub_source.find("{}ColumnID".format(namespace)).text
+            table_name = sub_source.find("{}TableID".format(namespace)).text
+            data_type = source.find("{}DataType".format(namespace)).text
+            dictionary[dim_name]["Attribute"].append(attribute_name)
+            dictionary[dim_name]["Column"].append(column_name)
+            dictionary[dim_name]["Datatype"].append(data_type)
+            dictionary[dim_name]["Table"].append(table_name)
+
+    return dictionary
+
 def getCubes(database_elmt,namespace):
     # Récupérer les cubes
     cubes = database_elmt.find("{}Cubes".format(namespace)).findall("{}Cube".format(namespace))
@@ -222,11 +244,23 @@ def saveAsXLSX(dictionary,excel_file_name = 'cubes.xlsx'):
         df.to_excel(f"{V.EXCEL_REPO}{excel_file_name}", index=False)
 
 if __name__ == "__main__":
+    print("Lol")
+    folder_path = V.XMLA_FOLDER
+    file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
+    print(file_names)
+    for file_path in file_names :
+    #    saveAsXLSX(extract_cube_structure(file_path,"MTQ_BRI_CAI"))
+    #    saveAsXLSX(extractCubeMultidimStructure(file_path),"cubes_multidim.xlsx")
+        
+        tree = ET.parse(file_path)
+        root = tree.getroot()
+        namespace = "{http://schemas.microsoft.com/analysisservices/2003/engine}"
+        database_elmt = root.find(".//{}ObjectDefinition".format(namespace)).find("{}Database".format(namespace))
+        dim_dict = getDimName(database_elmt,namespace)
+        for key, value in dim_dict.items():
+            print(key,":")
+            for sub_key, sub_value in value.items():
+                for element in sub_value:
+                    print("  ",sub_key,":",element)
 
-   folder_path = V.XMLA_FOLDER
-   file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
-   print(file_names)
-   for file_path in file_names :
-   #    saveAsXLSX(extract_cube_structure(file_path,"MTQ_BRI_CAI"))
-        saveAsXLSX(extractCubeMultidimStructure(file_path),"cubes_multidim.xlsx")
 
