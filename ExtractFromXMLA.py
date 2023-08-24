@@ -92,6 +92,12 @@ def extract_cube_tabular_structure(file_path,src_database):
 
     return cube_struct
 
+def getCatalog(database_elmt, namespace):
+    # CATALOG_NAME
+    catalog  = database_elmt.find("{}Name".format(namespace)).text
+    
+    return catalog
+
 def getDatasource(database_elmt,namespace):
     # Récupérer la datasource
     str_datasource = database_elmt.find("{}DataSources".format(namespace)).find("{}DataSource".format(namespace)).find("{}ConnectionString".format(namespace)).text
@@ -117,28 +123,12 @@ def getCubes(database_elmt,namespace):
     
     return cubes
 
-
-# Extract from multidim
-def extract_cube_multidim_structure(file_path):
-    # Structure de dictionnaire en sortie
-    cube_struct = {"COLUMN_NAME":[],"NOM_EXPLICIT":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"IS_DIMENSION":[],"EXPRESSION":[],"IS_VISIBLE":[],"GROUP":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
-
-    # Ouverture du fichier .xmla et récupération des données dans data
-    tree = ET.parse(file_path)
-    root = tree.getroot()
-    namespace = "{http://schemas.microsoft.com/analysisservices/2003/engine}"
-    database_elmt = root.find(".//{}ObjectDefinition".format(namespace)).find("{}Database".format(namespace))
-
-    # CATALOG_NAME
-    catalog  = database_elmt.find("{}Name".format(namespace)).text
-
+def cubeStructure(database_elmt, cube_struct, namespace):
+    cubes = getCubes(database_elmt, namespace)
+    catalog = getCatalog(database_elmt, namespace)
     src_database, src_serv = getDatasource(database_elmt, namespace)
 
-    dims = getDimCatalog(database_elmt, namespace)
-
-    cubes = getCubes(database_elmt, namespace)
     # Récupérer les infos des dimensions utilisées par chaque cube
-    
     expression = ""
     for cube in cubes:
         cube_name = cube.find("{}Name".format(namespace)).text
@@ -178,6 +168,25 @@ def extract_cube_multidim_structure(file_path):
                 new_values = [column_name,"",data_type,"wip",is_measure,is_dimension,expression,"wip",group_name,cube_name,catalog,f"{src_column}/{src_table}/{src_database}/{src_serv}"]
                 for key, value in zip(cube_struct.keys(), new_values):
                     cube_struct[key].append(value)
+
+    return cube_struct
+
+# Extract from multidim
+def extract_cube_multidim_structure(file_path):
+    # Structure de dictionnaire en sortie
+    cube_struct = {"COLUMN_NAME":[],"NOM_EXPLICIT":[],"DATA_TYPE":[],"IS_CALCULATED":[],"IS_MEASURE":[],"IS_DIMENSION":[],"EXPRESSION":[],"IS_VISIBLE":[],"GROUP":[],"CUBE_NAME":[],"CATALOG_NAME":[],"SOURCE":[]}
+
+    # Ouverture du fichier .xmla et récupération des données dans data
+    tree = ET.parse(file_path)
+    root = tree.getroot()
+    namespace = "{http://schemas.microsoft.com/analysisservices/2003/engine}"
+    database_elmt = root.find(".//{}ObjectDefinition".format(namespace)).find("{}Database".format(namespace))
+
+
+
+    dims = getDimCatalog(database_elmt, namespace)
+    
+    cube_struct = cubeStructure(database_elmt, cube_struct, namespace)
 
     return cube_struct
     
