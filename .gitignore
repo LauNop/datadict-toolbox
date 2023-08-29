@@ -2,4 +2,6 @@ envD_TB
 .vs
 .env
 __pycache__/
-.pyproj
+*.pyproj
+*.sln
+*.pyproj.user
