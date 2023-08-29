@@ -1,7 +1,32 @@
 import os
-from sql_metadata import Parser
+import re
 
 import envVar as V
+
+class SQLDeduce:
+    def __init__(self,query):
+        self.query = query
+
+    def query_sep(self):
+        queries = self.query.split(';')
+        return len(queries), queries
+
+    def query_type(self):
+        if re.match(r"(?i)^select",self.query):
+            print("It's a select query")
+            return "SELECT"
+        return
+    
+
+    def get_keywords(self):
+        
+        return
+
+    def get_select_statement(self):
+        pattern = r"(?i)select\s(.*?)\s+from"
+        re.search(pattern,self.query,re.DOTALL)
+        
+        return
 
 if __name__=="__main__":
     from ExtractFromDTSX import extract_erp_query
@@ -18,15 +43,10 @@ if __name__=="__main__":
         print("SQL QUERY:\n",query)
         print(V.DASH_LINE)
 
-        parser = Parser(query)
-
-        print("COLUMNS:\n",parser.columns)
+        deduce = SQLDeduce(query)
+        deduce.query_sep()
         print(V.DASH_LINE)
-        print("COLUMNS_DICT:\n",parser.columns_dict)
+        deduce.query_type()
         print(V.DASH_LINE)
-        print("ALIASES:\n",parser.columns_aliases)
-        print(V.DASH_LINE)
-        print("TABLE:\n",parser.tables)
-        print(V.DASH_LINE)
-        print("SUB-QUERIES:\n",parser.subqueries)
+        deduce.get_select_statement()
         print(V.DASH_LINE)
