@@ -1,0 +1,26 @@
+{
+  "Keywords": [
+    "SELECT",
+    "FROM",
+    "AS",
+    "DISTINCT",
+    "THEN",
+    "CASE",
+    "WHEN",
+    "INNER JOIN",
+    "JOIN",
+    "LEFT JOIN",
+    "RIGHT JOIN",
+    "ON",
+    "AND"
+  ],
+  "Parser": [
+    "(",
+    ")",
+    "[",
+    "]",
+    ",",
+    ";"
+  ]
+
+}

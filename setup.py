@@ -8,7 +8,7 @@ with open("README.md","r") as f:
 
 #Setting up
 setup(
-    name="datadicttoolbox",
+    name="datadict_toolbox",
     version = VERSION,
     author = "LauNop (Laurent NOPOLY)",
     author_email = "laurentnopoly@gmail.com",
