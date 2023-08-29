@@ -6,14 +6,14 @@ import envVar as V
 if __name__=="__main__":
     from ExtractFromDTSX import extract_erp_query
 
-    folder_path = "C:/Users/La_Nopoly/Desktop/TestExtract/DTSX"
+    folder_path = V.DTSX_FOLDER
     file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
     print("Nbr fichier: ",len(file_names))
     print(V.DASH_LINE)
 
     queries = extract_erp_query(file_names)["SQL_QUERY"]
 
-    for query in queries[:5]:
+    for query in queries[:3]:
     
         print("SQL QUERY:\n",query)
         print(V.DASH_LINE)
