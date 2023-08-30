@@ -42,11 +42,11 @@ class SQLDeduce:
         return
 
     def keyword_table(self):
-        with open('datadict_toolbox/sql_keywords.json', 'r') as file:
+        with open('datadict_toolbox/usefull.json', 'r') as file:
             json_content = file.read()
-            keywords_dict = json.loads(json_content)
+            usefull_dict = json.loads(json_content)
         file.close()
-        return keywords_dict["Keywords"]
+        return usefull_dict["Keywords"]
 
     def keywords_pos(self):
         search_pattern = "|".join(self.keywords)
@@ -64,7 +64,7 @@ class SQLDeduce:
             for pattern in self.keywords:
                 search_pattern = r'\b(' + pattern + r')\b'
                 if re.fullmatch(pattern,keyword,re.IGNORECASE):
-                    kw_dict[pattern][0] +=1
+                    kw_dict[pattern][0] += 1
                     kw_dict[pattern][1].append(span)
         kw_dict = {key: value for key, value in kw_dict.items() if value[0] > 0}
         return kw_dict
