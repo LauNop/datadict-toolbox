@@ -1,7 +1,7 @@
-envD_TB
-.vs
+
+# dev
+venv/
+.idea/
 .env
+Main.py
 __pycache__/
-*.pyproj
-*.sln
-*.pyproj.user

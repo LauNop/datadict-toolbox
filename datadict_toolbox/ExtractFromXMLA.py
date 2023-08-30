@@ -244,7 +244,7 @@ def extractCubeMultidimStructure(file_path):
     
 
 def saveAsXLSX(dictionary,excel_file_name = 'cubes.xlsx'):
-    path = f"{V.EXCEL_REPO}{excel_file_name}"
+    path = f"C:/Users/La_Nopoly/Desktop/TestExtract/Excel/ExcelResults/{excel_file_name}"
     if(os.path.exists(path)):
         new_df = pd.DataFrame(dictionary)
         existing_df = pd.read_excel(path)
@@ -255,10 +255,10 @@ def saveAsXLSX(dictionary,excel_file_name = 'cubes.xlsx'):
         df.to_excel(f"{V.EXCEL_REPO}{excel_file_name}", index=False)
 
 if __name__ == "__main__":
-    folder_path = V.XMLA_FOLDER
+    folder_path = "C:/Users/La_Nopoly/Desktop/TestExtract/Demande"
     file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
     print(file_names)
     for file_path in file_names :
     #    saveAsXLSX(extract_cube_structure(file_path,"MTQ_BRI_CAI"))
-        saveAsXLSX(extractCubeMultidimStructure(file_path),"cubes_multidim.xlsx")
+        saveAsXLSX(extractCubeMultidimStructure(file_path),"location_cubes_multidim.xlsx")
 
