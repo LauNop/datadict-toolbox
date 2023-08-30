@@ -2,6 +2,6 @@
 # dev
 venv/
 .idea/
-.env
+env/
 Main.py
 __pycache__/

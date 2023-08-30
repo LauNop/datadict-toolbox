@@ -4,7 +4,7 @@ import json
 import os
 import time
 
-import envVar as V
+from env import envVar as V
 
 openai.organization = "org-5wlnguNXWQIr7Jufj0TpmNXq"
 openai.api_key = os.getenv("OPENAI_API_KEY")

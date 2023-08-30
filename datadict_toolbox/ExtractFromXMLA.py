@@ -1,11 +1,10 @@
-﻿from cgitb import text
-import xml.etree.ElementTree as ET
+﻿import xml.etree.ElementTree as ET
 import json
 import pandas as pd
 import os
 import re
 
-import envVar as V
+from env import envVar as V
 
 
 # Extract from tabular
