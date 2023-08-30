@@ -58,7 +58,16 @@ class SQLDeduce:
         return kw_pos_in_query
 
     def keywords_count(self):
-        return
+        kw_dict = {key: [0,[]] for key in self.keywords}
+        for kw_element in self.kw_pos_in_query:
+            keyword, span = kw_element
+            for pattern in self.keywords:
+                search_pattern = r'\b(' + pattern + r')\b'
+                if re.fullmatch(pattern,keyword,re.IGNORECASE):
+                    kw_dict[pattern][0] +=1
+                    kw_dict[pattern][1].append(span)
+        kw_dict = {key: value for key, value in kw_dict.items() if value[0] > 0}
+        return kw_dict
 
     def get_alias(self, input_str):
         last_as_index = input_str.rfind(" as ")
