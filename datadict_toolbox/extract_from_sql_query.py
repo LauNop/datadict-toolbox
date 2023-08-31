@@ -101,13 +101,55 @@ class SQLDeduce:
     def between_select_from(self):
         return self.between_2_keywords("SELECT", "FROM")
 
+    def check_after_split(self,string_list):
+        parentheses_list = []
+        all_fusion = []
+        element_to_fuse = []
+        new_string_list = []
+        last_index_reach = 0
+        for i in range(len(string_list)):
+            string_element = string_list[i]
+            for character in string_element:
+                if character == '(':
+                    parentheses_list.append(character)
+                if character == ')':
+                    parentheses_list.pop()
+            if parentheses_list:
+                element_to_fuse.append(i)
+            elif not parentheses_list and element_to_fuse:
+                element_to_fuse.append(i)
+                if len(element_to_fuse) == 1:
+                    element_to_fuse.append(i+1)
+                all_fusion.append(element_to_fuse)
+                element_to_fuse = []
+            else:
+                continue
+        if all_fusion:
+            for fusion in all_fusion:
+                start = fusion[0]
+                end = fusion[-1]
+                if not last_index_reach:
+                    new_string_list = string_list[:start]
+                else:
+                    new_string_list += string_list[last_index_reach+1:start]
+                new_element = ', '.join(string_list[start:end])
+                new_string_list.append(new_element)
+                last_index_reach = end
+            if not last_index_reach == len(string_list)-1:
+                new_string_list += string_list[last_index_reach+1:]
+        else:
+            new_string_list = string_list
+        return new_string_list
+
     def split_column_expression(self):
         split_col_exp_dict = {}
         split_pattern = r',\s*(?![^()]*\))'
+        # split_pattern = r',\s*'
         elements_to_change = self.between_select_from()
         for i in range(len(elements_to_change)):
             elements = re.split(split_pattern,elements_to_change[i])
             elements = [elem.strip() for elem in elements]
+            elements = self.check_after_split(elements)
             split_col_exp_dict[i] = elements
         return split_col_exp_dict
 

@@ -7,11 +7,14 @@ from datadict_toolbox import ExtractorMultidimCubeCatalog as EMCC
 
 def main(num):
     if num == 1:
-        path = None
-        if path:
-            print("Pass")
-        else:
-            print("None")
+        tab = list(range(10))
+        print(tab[5:8])
+        print(tab[:0])
+        print(tab[:5])
+        print(tab[5:5])
+        print(tab[6:-1])
+        tab += [20]
+        print(tab)
     elif num == 2:
         folder_path = V.XMLA_FOLDER
         file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
@@ -39,7 +42,7 @@ def main(num):
         queries = extract_erp_query(file_names)["SQL_QUERY"]
 
         count = 1
-        for query in queries[6:7]:
+        for query in queries[:10]:
             print(count)
             print('SQL QUERY:\n', query)
             print(V.DASH_LINE)
@@ -59,24 +62,24 @@ def main(num):
             print(deduce.get_kw_query())
             print(V.DASH_LINE)
 
-            b_s_f = deduce.between_select_from()
-            print("Nbr de b_s_f:",len(b_s_f))
-            print(b_s_f)
-            print(V.DASH_LINE)
+            # b_s_f = deduce.between_select_from()
+            # print("Nbr de b_s_f:",len(b_s_f))
+            # print(b_s_f)
+            # print(V.DASH_LINE)
 
-            column_exp = deduce.split_column_expression()
-            print("Nbr de b_s_f",len(column_exp))
-            for key, value in column_exp.items():
-                print(key,":")
-                print("Nbr column expression:",len(value))
-                print()
-                for element in value:
-                    print(element)
-            print(V.DASH_LINE)
+            # column_exp = deduce.split_column_expression()
+            # print("Nbr de b_s_f",len(column_exp))
+            # for key, value in column_exp.items():
+            #     print(key,":")
+            #     print("Nbr column expression:",len(value))
+            #     print()
+            #     for element in value:
+            #         print(element)
+            # print(V.DASH_LINE)
 
-            print("Result of ANALYSE_COLUMN_EXPRESSION:")
-            print(deduce.analyse_column_expression())
-            print(V.DASH_LINE)
+            # print("Result of ANALYSE_COLUMN_EXPRESSION:")
+            # print(deduce.analyse_column_expression())
+            # print(V.DASH_LINE)
 
             print("Result of DEDUCE_COLUMN_EXPRESSION")
             print(deduce.deduce_column_expression())
