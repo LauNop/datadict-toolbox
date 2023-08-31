@@ -14,6 +14,8 @@ class SQLDeduce:
         self.__kw_pos_in_query = self.keywords_pos()
         self.__kw_count_in_query = self.keywords_count()
         self.__kw_in_query = self.keywords_used()
+        self.__is_got_subqueries = self.is_got_subqueries()
+        self.__all_tables = self.table_statement()
 
     # Getters
     def get_kw_pos(self):
@@ -24,6 +26,12 @@ class SQLDeduce:
 
     def get_kw_query(self):
         return self.__kw_in_query
+
+    def get_is_got_subqueries(self):
+        return self.__is_got_subqueries
+
+    def get_all_tables(self):
+        return self.__all_tables
 
     # Methods
     def clean(self):
@@ -185,6 +193,30 @@ class SQLDeduce:
                 keys_of_ce = element[1]
                 analysed_dict[select_key].append(self.define_for_column_expression(column_expression, keys_of_ce))
         return analysed_dict
+
+    def is_got_subqueries(self):
+        if len(self.between_select_from())>1:
+            return True
+        else:
+            return False
+
+    def table_statement(self):
+        length = len(self.__kw_pos_in_query)
+        table_statement_list = []
+        for i in range(length):
+            kw_element = self.__kw_pos_in_query[i]
+            keyword, span = kw_element
+            if re.fullmatch('FROM',keyword,re.IGNORECASE):
+                start_a, end_a = span
+                if i != length-1:
+                    next_keyword, next_span = self.__kw_pos_in_query[i+1]
+                    start_b, end_b = next_span
+                    statement = self.query[end_a:start_b].strip()
+                    table_statement_list.append(statement)
+                else:
+                    statement = self.query[end_a:].strip()
+                    table_statement_list.append(statement)
+        return table_statement_list
 
 
 if __name__ == "__main__":

@@ -55,9 +55,9 @@ def main(num):
             # print(kw_pos)
             # print(V.DASH_LINE)
 
-            # kw_count = deduce.get_kw_count()
-            # print(kw_count)
-            # print(V.DASH_LINE)
+            kw_count = deduce.get_kw_count()
+            print(kw_count)
+            print(V.DASH_LINE)
 
             print(deduce.get_kw_query())
             print(V.DASH_LINE)
@@ -83,6 +83,13 @@ def main(num):
 
             print("Result of DEDUCE_COLUMN_EXPRESSION")
             print(deduce.deduce_column_expression())
+            print(V.DASH_LINE)
+
+            print("IS SUBQUERIES:", deduce.get_is_got_subqueries())
+            print(V.DASH_LINE)
+
+            print("TABLES:")
+            print(deduce.get_all_tables())
             print(V.DASH_LINE)
 
             print(V.DASH_LINE)
