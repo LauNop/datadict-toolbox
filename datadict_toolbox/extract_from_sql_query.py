@@ -79,10 +79,10 @@ class SQLDeduce:
         keywords_in_query = [key for key, value in self.__kw_count_in_query.items()]
         return keywords_in_query
 
-    def between_select_from(self):
+    def between_2_keywords(self, keyword_before, keyword_after):
         b_s_f_list = []
-        boundary_a = self.__kw_count_in_query["SELECT"][1]
-        boundary_b = self.__kw_count_in_query["FROM"][1]
+        boundary_a = self.__kw_count_in_query[keyword_before][1]
+        boundary_b = self.__kw_count_in_query[keyword_after][1]
         if len(boundary_a) == len(boundary_b):
             for i in range(len(boundary_a)):
                 start_a, end_a = boundary_a[i]
@@ -92,6 +92,19 @@ class SQLDeduce:
         else:
             print("Length Problem")
         return b_s_f_list
+
+    def between_select_from(self):
+        return self.between_2_keywords("SELECT", "FROM")
+
+    def split_column_expression(self):
+        split_col_exp_dict = {}
+        split_pattern = r',\s*(?![^()]*\))'
+        elements_to_change = self.between_select_from()
+        for i in range(len(elements_to_change)):
+            elements = re.split(split_pattern,elements_to_change[i])
+            elements = [elem.strip() for elem in elements]
+            split_col_exp_dict[i] = elements
+        return split_col_exp_dict
 
 
 if __name__ == "__main__":

@@ -41,19 +41,35 @@ def main(num):
         for query in queries[:5]:
             print('SQL QUERY:\n', query)
             print(V.DASH_LINE)
+
             deduce = SQLDeduce(query)
             print(V.DASH_LINE)
+
             kw_pos = deduce.get_kw_pos()
             print("Nbr keyword: ", len(kw_pos))
             print(kw_pos)
             print(V.DASH_LINE)
+
             kw_count = deduce.get_kw_count()
             print(kw_count)
             print(V.DASH_LINE)
+
             print(deduce.get_kw_query())
             print(V.DASH_LINE)
-            print(deduce.between_select_from())
+
+            b_s_f = deduce.between_select_from()
+            print("Nbr de b_s_f:",len(b_s_f))
+            print(b_s_f)
             print(V.DASH_LINE)
+
+            column_exp = deduce.split_column_expression()
+            print("Nbr de b_s_f",len(column_exp))
+            for key, value in column_exp.items():
+                print(key,":")
+                print("Nbr column expression:",len(value))
+                print()
+            print(V.DASH_LINE)
+
     else:
         print("No case fit : Wrong number")
     return
