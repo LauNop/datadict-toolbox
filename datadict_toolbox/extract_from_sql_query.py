@@ -10,16 +10,22 @@ class SQLDeduce:
         print(self.query_type())
         self.clean()
 
-        self.keywords = self.keyword_table()
-        self.kw_pos_in_query = self.keywords_pos()
-        self.kw_count_in_query = self.keywords_count()
+        self.__keywords = self.keyword_table()
+        self.__kw_pos_in_query = self.keywords_pos()
+        self.__kw_count_in_query = self.keywords_count()
+        self.__kw_in_query = self.keywords_query()
 
     # Getters
     def get_kw_pos(self):
-        return self.kw_pos_in_query
+        return self.__kw_pos_in_query
 
     def get_kw_count(self):
-        return self.kw_count_in_query
+        return self.__kw_count_in_query
+
+    def get_kw_query(self):
+        return self.__kw_in_query
+
+    # Methods
     def clean(self):
         self.query = re.sub('\r?\n', ' ', self.query)
         return
@@ -49,7 +55,7 @@ class SQLDeduce:
         return usefull_dict["Keywords"]
 
     def keywords_pos(self):
-        search_pattern = "|".join(self.keywords)
+        search_pattern = "|".join(self.__keywords)
         search_pattern = r'\b('+search_pattern+r')\b'
         kw_pos_in_query = []
         match_iterator = re.finditer(search_pattern, self.query, re.IGNORECASE)
@@ -58,10 +64,10 @@ class SQLDeduce:
         return kw_pos_in_query
 
     def keywords_count(self):
-        kw_dict = {key: [0,[]] for key in self.keywords}
-        for kw_element in self.kw_pos_in_query:
+        kw_dict = {key: [0,[]] for key in self.__keywords}
+        for kw_element in self.__kw_pos_in_query:
             keyword, span = kw_element
-            for pattern in self.keywords:
+            for pattern in self.__keywords:
                 search_pattern = r'\b(' + pattern + r')\b'
                 if re.fullmatch(pattern,keyword,re.IGNORECASE):
                     kw_dict[pattern][0] += 1
@@ -69,11 +75,23 @@ class SQLDeduce:
         kw_dict = {key: value for key, value in kw_dict.items() if value[0] > 0}
         return kw_dict
 
-    def get_alias(self, input_str):
-        last_as_index = input_str.rfind(" as ")
-        colex = input_str[:last_as_index].strip()
-        alias = input_str[last_as_index + 4:].strip()
-        return alias, colex
+    def keywords_query(self):
+        keywords_in_query = [key for key, value in self.__kw_count_in_query.items()]
+        return keywords_in_query
+
+    def between_select_from(self):
+        b_s_f_list = []
+        boundary_a = self.__kw_count_in_query["SELECT"][1]
+        boundary_b = self.__kw_count_in_query["FROM"][1]
+        if len(boundary_a) == len(boundary_b):
+            for i in range(len(boundary_a)):
+                start_a, end_a = boundary_a[i]
+                start_b, end_b = boundary_b[i]
+                between_result = self.query[end_a:start_b]
+                b_s_f_list.append(between_result)
+        else:
+            print("Length Problem")
+        return b_s_f_list
 
 
 if __name__ == "__main__":

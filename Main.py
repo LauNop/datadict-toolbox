@@ -28,7 +28,6 @@ def main(num):
             excel_file_name = "multidim_datadict.xlsx"
             emcc.save()
             emcc.save(excel_file_name)
-
     elif num == 3:
         folder_path = V.DTSX_FOLDER
         print(folder_path)
@@ -39,7 +38,7 @@ def main(num):
 
         queries = extract_erp_query(file_names)["SQL_QUERY"]
 
-        for query in queries[:2]:
+        for query in queries[:5]:
             print('SQL QUERY:\n', query)
             print(V.DASH_LINE)
             deduce = SQLDeduce(query)
@@ -51,10 +50,14 @@ def main(num):
             kw_count = deduce.get_kw_count()
             print(kw_count)
             print(V.DASH_LINE)
+            print(deduce.get_kw_query())
+            print(V.DASH_LINE)
+            print(deduce.between_select_from())
+            print(V.DASH_LINE)
     else:
         print("No case fit : Wrong number")
     return
 
 
 if __name__ == "__main__":
-    main(2)
+    main(3)
