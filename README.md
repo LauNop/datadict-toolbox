@@ -8,7 +8,7 @@ Dictionary_ToolBox est un projet python contenant des outils pour consitiuer un 
 ExtractFromDTSX permet de récupérer des informations d'un fichier .dtsx pour analyser des packages SSIS, récupérer leur mapping, leur requête SQL et leur variable de configuration
 
 ### ExtractFromXMLA.py (Opérationel)
-ExtractFromXMLA permet de récupérer les informations d'un fichier .xmla afin de constituer le dictionnaire de donnée d'un cube tabulaire.
+ExtractFromXMLA sous forme de classe.
 
 Il permet également de constituer le dictionnaire de données des cubes mutlidimensionnelle d'un catalogue de cubes.
 
