@@ -38,21 +38,23 @@ def main(num):
 
         queries = extract_erp_query(file_names)["SQL_QUERY"]
 
-        for query in queries[:5]:
+        count = 1
+        for query in queries[6:7]:
+            print(count)
             print('SQL QUERY:\n', query)
             print(V.DASH_LINE)
 
             deduce = SQLDeduce(query)
             print(V.DASH_LINE)
 
-            kw_pos = deduce.get_kw_pos()
-            print("Nbr keyword: ", len(kw_pos))
-            print(kw_pos)
-            print(V.DASH_LINE)
+            # kw_pos = deduce.get_kw_pos()
+            # print("Nbr keyword: ", len(kw_pos))
+            # print(kw_pos)
+            # print(V.DASH_LINE)
 
-            kw_count = deduce.get_kw_count()
-            print(kw_count)
-            print(V.DASH_LINE)
+            # kw_count = deduce.get_kw_count()
+            # print(kw_count)
+            # print(V.DASH_LINE)
 
             print(deduce.get_kw_query())
             print(V.DASH_LINE)
@@ -68,7 +70,20 @@ def main(num):
                 print(key,":")
                 print("Nbr column expression:",len(value))
                 print()
+                for element in value:
+                    print(element)
             print(V.DASH_LINE)
+
+            print("Result of ANALYSE_COLUMN_EXPRESSION:")
+            print(deduce.analyse_column_expression())
+            print(V.DASH_LINE)
+
+            print("Result of DEDUCE_COLUMN_EXPRESSION")
+            print(deduce.deduce_column_expression())
+            print(V.DASH_LINE)
+
+            print(V.DASH_LINE)
+            count += 1
 
     else:
         print("No case fit : Wrong number")
