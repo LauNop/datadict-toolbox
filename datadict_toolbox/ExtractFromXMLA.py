@@ -6,6 +6,11 @@ import re
 
 
 # Extract from tabular
+class ExtractorTabularCubeCatalog:
+    def __init__(self):
+        print('Convert extraction to class')
+
+
 def extract_cube_tabular_structure(file_path, src_database):
     # Structure de dictionnaire en sortie
     cube_struct = {"COLUMN_NAME": [], "NOM_EXPLICIT": [], "DATA_TYPE": [], "IS_CALCULATED": [], "IS_MEASURE": [],
@@ -177,6 +182,7 @@ class ExtractorMultidimCubeCatalog:
 
         # Traitement de str_datasource pour récupérer l'IP serveur et l'Initial Catalog
         str_datasource = str_datasource.split(";")
+        src_database, src_serv = "", ""
         for str_el in str_datasource:
             if re.match(r"^Data Source.*", str_el):
                 src_serv = str_el[str_el.index("=") + 1:]
