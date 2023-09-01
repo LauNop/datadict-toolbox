@@ -2,11 +2,11 @@ import os
 from env import envVar as V
 from datadict_toolbox import SQLDeduce
 from datadict_toolbox import extract_erp_query
-from datadict_toolbox import ExtractorMultidimCubeCatalog as EMCC
+from datadict_toolbox import ExtractorMultidimCubeCatalog as EMCC, ExtractorTabularCubeCatalog as ETCC
 
 
-def main(num):
-    if num == 1:
+def main(name):
+    if name == "Exp":
         tab = list(range(10))
         print(tab[5:8])
         print(tab[:0])
@@ -15,8 +15,25 @@ def main(num):
         print(tab[6:-1])
         tab += [20]
         print(tab)
-    elif num == 2:
-        folder_path = V.XMLA_FOLDER
+    elif name == "Tabular":
+        folder_path = V.TABULAR_FOLDER
+        file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
+                      os.path.isfile(os.path.join(folder_path, f))]
+        print("Nbr fichier: ", len(file_names))
+        for file_path in file_names:
+            etcc = ETCC(file_path)
+            print("Database:", etcc.src_db)
+            print("Serveur:", etcc.src_serv)
+            print("Cube:",etcc.cube_name())
+            print("Dictionnaire de donnée du catalogue:\n",etcc.cube_struct)
+            excel_file_name = "excel_result/tabular_datadict.xlsx"
+            etcc.save()
+            etcc.save(excel_file_name)
+
+
+
+    elif name == "Multidim":
+        folder_path = V.MULTIDIM_FOLDER
         file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
                       os.path.isfile(os.path.join(folder_path, f))]
         print("Nbr fichier: ", len(file_names))
@@ -28,10 +45,9 @@ def main(num):
             print("Dimensions du Catalogque:", emcc.get_dims_catalog_name())
             print("Cubes du catalogue:",emcc.get_cubes_name())
             print("Dictionnaire de donnée du catalogue:\n",emcc.get_data_dict())
-            excel_file_name = "multidim_datadict.xlsx"
             emcc.save()
-            emcc.save(excel_file_name)
-    elif num == 3:
+
+    elif name == "SQL":
         folder_path = V.DTSX_FOLDER
         print(folder_path)
         file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
@@ -101,4 +117,4 @@ def main(num):
 
 
 if __name__ == "__main__":
-    main(3)
+    main("Multidim")

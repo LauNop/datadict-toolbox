@@ -53,7 +53,7 @@
     "IS_MEASURE",
     "EXPRESSION",
     "IS_VISIBLE",
-    "DIMENSION_NAME",
+    "TABLE_NAME",
     "CUBE_NAME",
     "CATALOG_NAME",
     "SOURCE"
