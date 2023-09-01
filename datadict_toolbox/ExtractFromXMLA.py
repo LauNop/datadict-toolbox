@@ -357,11 +357,9 @@ class ExtractorMultidimCubeCatalog(Extractor):
         measure_groups = cube.find(self.balise_format("MeasureGroups")).findall(self.balise_format("MeasureGroup"))
         for measure_group in measure_groups:
             group_name = measure_group.find(self.balise_format("Name")).text
-            print(" GROUP : ", group_name)
             measures = measure_group.find(self.balise_format("Measures")).findall(self.balise_format("Measure"))
             for measure in measures:
                 column_name = measure.find(self.balise_format("Name")).text
-                print("     Attribut : ", column_name)
                 data_type = measure.find(self.balise_format("DataType")).text
                 source = measure.find(self.balise_format("Source"))
                 sub_source = source.find(self.balise_format("Source"))
@@ -377,10 +375,19 @@ class ExtractorMultidimCubeCatalog(Extractor):
                 self.insert_structure(new_values)
         return
 
+    def cube_calculate(self, cube):
+        mdxscript = cube.find(self.balise_format("MdxScripts"))
+        if mdxscript is not None:
+            calculate_group = mdxscript.find(self.balise_format("MdxScript"))
+            raw_text = calculate_group.find(self.balise_format("Commands")).find(self.balise_format("Command")).find(self.balise_format("Text")).text
+            print(raw_text)
+        return
+
     def create_cube_struct(self):
         for cube in self.cubes():
             self.cube_dimensions_usage(cube)
             self.cube_measures(cube)
+            self.cube_calculate(cube)
 
     def build_save_path(self):
         return [self.catalog_name(),"mutldidim",str(len(self.cubes()))]

@@ -37,13 +37,13 @@ def main(name):
         print("Nbr fichier: ", len(file_names))
         for file_path in file_names:
             emcc = EMCC(file_path)
-            print("Namespace:", emcc.namespace)
-            print("Database:", emcc.src_db)
-            print("Serveur:", emcc.src_serv)
-            print("Dimensions du Catalogque:", emcc.dims_catalog_name())
-            print("Cubes du catalogue:", emcc.cubes_name())
-            print("Dictionnaire de donnée du catalogue:\n",emcc.cube_struct)
-            emcc.save()
+            # print("Namespace:", emcc.namespace)
+            # print("Database:", emcc.src_db)
+            # print("Serveur:", emcc.src_serv)
+            # print("Dimensions du Catalogque:", emcc.dims_catalog_name())
+            # print("Cubes du catalogue:", emcc.cubes_name())
+            # print("Dictionnaire de donnée du catalogue:\n",emcc.cube_struct)
+            # emcc.save()
 
     elif name == "SQL":
         folder_path = V.DTSX_FOLDER
