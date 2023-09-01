@@ -26,7 +26,7 @@ def main(name):
             print("Serveur:", etcc.src_serv)
             print("Cube:",etcc.cube_name())
             print("Dictionnaire de donnée du catalogue:\n",etcc.cube_struct)
-            excel_file_name = "excel_result/tabular_datadict.xlsx"
+            excel_file_name = "tabular_datadict.xlsx"
             etcc.save()
             etcc.save(excel_file_name)
 
@@ -39,12 +39,12 @@ def main(name):
         print("Nbr fichier: ", len(file_names))
         for file_path in file_names:
             emcc = EMCC(file_path)
-            print("Namespace:", emcc.get_namespace())
-            print("Database:", emcc.get_src_db())
-            print("Serveur:", emcc.get_src_serv())
-            print("Dimensions du Catalogque:", emcc.get_dims_catalog_name())
-            print("Cubes du catalogue:",emcc.get_cubes_name())
-            print("Dictionnaire de donnée du catalogue:\n",emcc.get_data_dict())
+            print("Namespace:", emcc.namespace)
+            print("Database:", emcc.src_db)
+            print("Serveur:", emcc.src_serv)
+            print("Dimensions du Catalogque:", emcc.dims_catalog_name())
+            print("Cubes du catalogue:", emcc.cubes_name())
+            print("Dictionnaire de donnée du catalogue:\n",emcc.cube_struct)
             emcc.save()
 
     elif name == "SQL":

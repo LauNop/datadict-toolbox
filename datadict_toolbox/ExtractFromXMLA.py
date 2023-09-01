@@ -3,13 +3,96 @@ import json
 import pandas as pd
 import os
 import re
+from abc import ABC, abstractmethod
+
+
+class Extractor(ABC):
+    def __init__(self,file_path):
+        self.cube_struct = None
+        self.file_path = file_path
+
+
+    @abstractmethod
+    def build_cube_dict(self):
+        pass
+
+    @abstractmethod
+    def open_file(self):
+        pass
+
+    @abstractmethod
+    def db_element(self):
+        pass
+
+    @abstractmethod
+    def catalog_name(self):
+        pass
+
+    def cube_name(self):
+        pass
+
+    @abstractmethod
+    def extract_from_connectionString(self, str_datasource):
+        # Traitement de str_datasource pour récupérer l'IP serveur et l'Initial Catalog
+        str_datasource = str_datasource.split(";")
+        src_database, src_serv = "", ""
+        for str_el in str_datasource:
+            if re.match(r"^Data Source.*", str_el):
+                src_serv = str_el[str_el.index("=") + 1:]
+            if re.match(r"^Initial Catalog", str_el):
+                src_database = str_el[str_el.index("=") + 1:]
+        return src_database, src_serv
+
+    @abstractmethod
+    def datasource(self):
+        pass
+
+    @abstractmethod
+    def insert_structure(self, values):
+        for key, value in zip(self.cube_struct.keys(), values):
+            self.cube_struct[key].append(value)
+        return
+
+    @abstractmethod
+    def create_cube_struct(self):
+        pass
+
+    @abstractmethod
+    def build_save_path(self):
+        pass
+    @abstractmethod
+    def save(self, path=None):
+        dossier = "excel_result/"
+        if not (os.path.exists(dossier) and os.path.isdir(dossier)):
+            os.makedirs(dossier)
+
+        if path is None:
+            path_build = self.build_save_path()
+            path = "_".join(path_build) + ".xlsx"
+            path = dossier+path
+        else:
+            path = dossier+path
+
+        if os.path.exists(path):
+            new_df = pd.DataFrame(self.cube_struct)
+            existing_df = pd.read_excel(path)
+            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+            combined_df.to_excel(path, index=False)
+        else:
+            df = pd.DataFrame(self.cube_struct)
+            df.to_excel(path, index=False)
+        return
+
+    @abstractmethod
+    def setup(self):
+        pass
 
 
 # Extract from tabular
-class ExtractorTabularCubeCatalog:
-    def __init__(self, file_path):
+class ExtractorTabularCubeCatalog(Extractor):
+    def __init__(self,file_path):
+        super().__init__(file_path)
         self.cube_struct = self.build_cube_dict()
-        self.file_path = file_path
         self.root = self.open_file()
         self.db_element = self.db_element()
         self.src_db, self.src_serv = self.datasource()
@@ -22,6 +105,9 @@ class ExtractorTabularCubeCatalog:
         file.close()
         cube_struct = {key: [] for key in usefull_dict["Tabular"]}
         return cube_struct
+
+    def setup(self):
+        pass
 
     def open_file(self):
         with open(self.file_path, 'r', encoding='utf-8') as file:
@@ -47,28 +133,19 @@ class ExtractorTabularCubeCatalog:
         return cube_name
 
     def extract_from_connectionString(self, str_datasource):
-        # Traitement de str_datasource pour récupérer l'IP serveur et l'Initial Catalog
-        str_datasource = str_datasource.split(";")
-        src_database, src_serv = "", ""
-        for str_el in str_datasource:
-            if re.match(r"^Data Source.*", str_el):
-                src_serv = str_el[str_el.index("=") + 1:]
-            if re.match(r"^Initial Catalog", str_el):
-                src_database = str_el[str_el.index("=") + 1:]
-        return src_database, src_serv
+        return super().extract_from_connectionString(str_datasource)
 
     def datasource(self):
         str_datasource = self.model_element()['dataSources'][0]['connectionString']
         return self.extract_from_connectionString(str_datasource)
 
+    def insert_structure(self, values):
+        return super().insert_structure(values)
+
     def tables_element(self):
         tables_element = self.model_element()['tables']
         return tables_element
 
-    def insert_structure(self, values):
-        for key, value in zip(self.cube_struct.keys(), values):
-            self.cube_struct[key].append(value)
-        return
 
     def cube_table(self, dict_table):
         table_name = dict_table['name']
@@ -122,151 +199,28 @@ class ExtractorTabularCubeCatalog:
             self.cube_table(dict_table)
             self.cube_measures(dict_table)
 
+    def build_save_path(self):
+        return [self.catalog_name(), "tabular", self.cube_name()]
+
     def save(self, path=None):
         if path is None:
-            path_build = [self.catalog_name(), "tabular", self.cube_name()]
-            path = "_".join(path_build) + ".xlsx"
-
-        if os.path.exists(path):
-            new_df = pd.DataFrame(self.cube_struct)
-            existing_df = pd.read_excel(path)
-            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
-            combined_df.to_excel(path, index=False)
+            return super().save()
         else:
-            df = pd.DataFrame(self.cube_struct)
-            df.to_excel(path, index=False)
-
-def extract_cube_tabular_structure(file_path, src_database):
-    # Structure de dictionnaire en sortie
-    cube_struct = {"COLUMN_NAME": [], "NOM_EXPLICIT": [], "DATA_TYPE": [], "IS_CALCULATED": [], "IS_MEASURE": [],
-                   "EXPRESSION": [], "IS_VISIBLE": [], "DIMENSION_NAME": [], "CUBE_NAME": [], "CATALOG_NAME": [],
-                   "SOURCE": []}
-
-    # Variable de manipulation
-    data = ""
-    new_values = []
-    src_table = ""
-    src_column = ""
-
-    # Ouverture du fichier .xmla et récupération des données dans data
-    with open(file_path, 'r', encoding='utf-8') as file:
-        json_content = file.read()
-        data = json.loads(json_content)
-    file.close()
-
-    # Etapes de récupération des différentes clé du dictionnaire
-
-    # CATALOG_NAME
-    catalog = data['create']['parentObject']['database']
-
-    # CUBE_NAME
-    cube = 'Modèle'
-
-    table_dict = data['create']['table']
-
-    # DIMENSION_NAME
-    dimension = table_dict['name']
-
-    annotations = table_dict['annotations']
-    for annotation in annotations:
-        if annotation['name'] == '_TM_ExtProp_DbTableName':
-            # src_table portion de SOURCE
-            src_table = annotation['value']
-
-    # Récupération des colonnes classiques
-    measure = 0
-    # COLUMN_NAME, DATA_TYPE, IS_CALCULATED, IS_MEASURE, EXPRESSION, IS_VISIBLE
-    columns = table_dict['columns']
-    for column in columns:
-        keys = list(column.keys())
-
-        if 'type' in keys:
-            calculated = 1
-        else:
-            calculated = 0
-        if 'isHidden' in keys:
-            visible = 0
-        else:
-            visible = 1
-        if 'expression' in keys:
-            expression = column['expression']
-            src = ""
-        else:
-            expression = ''
-            src_column = column['sourceColumn']
-            src = src_column + '/' + src_table + '/' + src_database
-
-        new_values = [column['name'], "", column['dataType'], calculated, measure, expression, visible, dimension, cube,
-                      catalog, src]
-        for key, value in zip(cube_struct.keys(), new_values):
-            cube_struct[key].append(value)
-
-    # Récupération des colonnes Measures
-    calculated = 0
-    measure = 1
-    if "measures" in list(table_dict.keys()):
-        measures = table_dict['measures']
-        for measure_ in measures:
-            keys = list(measure_.keys())
-
-            if 'isHidden' in keys:
-                visible = 0
-            else:
-                visible = 1
-
-            expression = measure_['expression']
-            new_values = [measure_['name'], "", 'measure', calculated, measure, expression, visible, dimension, cube,
-                          catalog, ""]
-            for key, value in zip(cube_struct.keys(), new_values):
-                cube_struct[key].append(value)
-
-    return cube_struct
+           return super().save(path)
 
 
-class ExtractorMultidimCubeCatalog:
+class ExtractorMultidimCubeCatalog(Extractor):
     def __init__(self, file_path):
+        super().__init__(file_path)
         self.cube_struct = self.build_cube_dict()
-        self.file_path = file_path
         self.root = self.open_file()
         self.namespace = self.setup()
         self.db_element = self.db_element()
         self.src_db, self.src_serv = self.datasource()
         self.create_cube_struct()
 
-    # Getters
-    def get_file_path(self):
-        return self.file_path
 
-    def get_root(self):
-        return self.root
 
-    def get_namespace(self):
-        return self.namespace
-
-    def get_src_db(self):
-        return self.src_db
-
-    def get_src_serv(self):
-        return self.src_serv
-
-    def get_dims_catalog_name(self):
-        dim_name_list = []
-        dimensions = self.dim_catalog()
-        for dimension in dimensions:
-            dim_name = dimension.find(self.balise_format("Name")).text
-            dim_name_list.append(dim_name)
-        return dim_name_list
-
-    def get_cubes_name(self):
-        cubes_name_list = []
-        for cube in self.cubes():
-            cubes_name_list.append(self.cube_name(cube))
-        return cubes_name_list
-
-    def get_data_dict(self):
-        return self.cube_struct
-
-    # Methods
     def build_cube_dict(self):
         with open('datadict_toolbox/usefull.json', 'r') as file:
             json_content = file.read()
@@ -281,16 +235,6 @@ class ExtractorMultidimCubeCatalog:
         root = tree.getroot()
         return root
 
-    def setup(self):
-        pattern = r'{(.*)}'
-        regex = re.match(pattern, self.root.tag)
-        namespace = regex.group()
-        return namespace
-
-    def balise_format(self, balise_name):
-        formatted = f"{self.namespace}{balise_name}"
-        return formatted
-
     def db_element(self):
         db_obj = self.root.find(".//" + self.balise_format("ObjectDefinition")).find(self.balise_format("Database"))
         return db_obj
@@ -300,16 +244,12 @@ class ExtractorMultidimCubeCatalog:
         catalog = self.db_element.find(self.balise_format("Name")).text
         return catalog
 
+    def cube_name(self, cube):
+        cube_name = cube.find(self.balise_format("Name")).text
+        return cube_name
+
     def extract_from_connectionString(self, str_datasource):
-        # Traitement de str_datasource pour récupérer l'IP serveur et l'Initial Catalog
-        str_datasource = str_datasource.split(";")
-        src_database, src_serv = "", ""
-        for str_el in str_datasource:
-            if re.match(r"^Data Source.*", str_el):
-                src_serv = str_el[str_el.index("=") + 1:]
-            if re.match(r"^Initial Catalog", str_el):
-                src_database = str_el[str_el.index("=") + 1:]
-        return src_database, src_serv
+        return super().extract_from_connectionString(str_datasource)
 
     def datasource(self):
         # Récupérer la datasource
@@ -317,6 +257,33 @@ class ExtractorMultidimCubeCatalog:
             self.balise_format("DataSource")).find(
             self.balise_format("ConnectionString")).text
         return self.extract_from_connectionString(str_datasource)
+
+    def insert_structure(self, values):
+        return super().insert_structure(values)
+
+    def dims_catalog_name(self):
+        dim_name_list = []
+        dimensions = self.dim_catalog()
+        for dimension in dimensions:
+            dim_name = dimension.find(self.balise_format("Name")).text
+            dim_name_list.append(dim_name)
+        return dim_name_list
+
+    def cubes_name(self):
+        cubes_name_list = []
+        for cube in self.cubes():
+            cubes_name_list.append(self.cube_name(cube))
+        return cubes_name_list
+
+    def setup(self):
+        pattern = r'{(.*)}'
+        regex = re.match(pattern, self.root.tag)
+        namespace = regex.group()
+        return namespace
+
+    def balise_format(self, balise_name):
+        formatted = f"{self.namespace}{balise_name}"
+        return formatted
 
     def dim_catalog(self):
         # Récupérer les dimensions à la source
@@ -353,15 +320,6 @@ class ExtractorMultidimCubeCatalog:
         # Récupérer les cubes
         cubes = self.db_element.find(self.balise_format("Cubes")).findall(self.balise_format("Cube"))
         return cubes
-
-    def insert_structure(self, values):
-        for key, value in zip(self.cube_struct.keys(), values):
-            self.cube_struct[key].append(value)
-        return
-
-    def cube_name(self, cube):
-        cube_name = cube.find(self.balise_format("Name")).text
-        return cube_name
 
     def cube_dimensions_usage(self, cube):
         expression = ""
@@ -424,19 +382,14 @@ class ExtractorMultidimCubeCatalog:
             self.cube_dimensions_usage(cube)
             self.cube_measures(cube)
 
+    def build_save_path(self):
+        return [self.catalog_name(),"mutldidim",str(len(self.cubes()))]
+
     def save(self, path=None):
         if path is None:
-            path_build = [self.catalog_name(), "multidim", str(len(self.cubes()))]
-            path = "_".join(path_build) + ".xlsx"
-
-        if os.path.exists(path):
-            new_df = pd.DataFrame(self.cube_struct)
-            existing_df = pd.read_excel(path)
-            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
-            combined_df.to_excel(path, index=False)
+            return super().save()
         else:
-            df = pd.DataFrame(self.cube_struct)
-            df.to_excel(path, index=False)
+            return super().save(path)
 
 
 if __name__ == "__main__":
