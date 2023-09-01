@@ -26,9 +26,7 @@ def main(name):
             print("Serveur:", etcc.src_serv)
             print("Cube:",etcc.cube_name())
             print("Dictionnaire de donnée du catalogue:\n",etcc.cube_struct)
-            excel_file_name = "tabular_datadict.xlsx"
             etcc.save()
-            etcc.save(excel_file_name)
 
 
 
