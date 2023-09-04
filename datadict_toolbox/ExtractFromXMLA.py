@@ -323,14 +323,16 @@ class ExtractorMultidimCubeCatalog(Extractor):
         is_measure = 0
         is_dimension = 1
         is_calculated = 0
-        is_visible = "wip"
         c_dims = cube.find(self.balise_format("Dimensions")).findall(self.balise_format("Dimension"))
         for c_dim in c_dims:
             group_name = c_dim.find(self.balise_format("Name")).text
             dimension_id = c_dim.find(self.balise_format("DimensionID")).text
             attributes = c_dim.find(self.balise_format("Attributes")).findall(self.balise_format("Attribute"))
             for attribute in attributes:
+                is_visible = 1
                 column_name = attribute.find(self.balise_format("AttributeID")).text
+                if attribute.find(self.balise_format("AttributeHierarchyVisible")) is not None:
+                    is_visible = 0
                 dim_dict = self.dim_metadata()
                 for i in range(len(dim_dict[dimension_id]["Attribute_id"])):
 
@@ -383,24 +385,24 @@ class ExtractorMultidimCubeCatalog(Extractor):
         text = re.split('CALCULATE;', raw_text)
         calculates = re.split(r'CREATE', text[1].strip(), re.DOTALL)
         calculates = calculates[1:]
-        print("=============================")
-        print(len(calculates))
-        print("Calcultes QUERY:\n", calculates)
-        print("=============================")
+        # print("=============================")
+        # print(len(calculates))
+        # print("Calcultes QUERY:\n", calculates)
+        # print("=============================")
         for element in calculates:
             element = re.split(r'\sAS\s', element)
             index = re.search(r'Measures', element[0]).end()
             calculate_name = element[0][index + 2:].strip()
             calculate_name = calculate_name[1:-1]
-            print("=============================")
-            print("CALCULATE NAME:", calculate_name)
-            print("=============================")
+            # print("=============================")
+            # print("CALCULATE NAME:", calculate_name)
+            # print("=============================")
             split_pattern = r'(\b[A-Z_]+\s=.*,)'
             variables = re.split(split_pattern, element[1], re.DOTALL)
-            print("=============================")
-            print("VARIABLES", len(variables))
-            print(variables)
-            print("=============================")
+            # print("=============================")
+            # print("VARIABLES", len(variables))
+            # print(variables)
+            # print("=============================")
 
             expression = variables[0]
             value_pattern = r'=\s+["\']? (\w)+["\']?"\s+[,;]$'
@@ -410,19 +412,19 @@ class ExtractorMultidimCubeCatalog(Extractor):
                     data_type = data_type.replace('"','')
                     data_type = data_type.replace(',','')
                     data_type = data_type.strip()
-                    print('data_type:', data_type)
+                    # print('data_type:', data_type)
                 elif re.search(r'VISIBLE', parameter):
                     is_visible = parameter[parameter.index("=")+1:]
                     is_visible = is_visible.replace(',', '')
                     is_visible = is_visible.strip()
                     is_visible = int(is_visible)
-                    print('is_visible:', is_visible)
+                    # print('is_visible:', is_visible)
                 elif re.search(r'ASSOCIATED_MEASURE_GROUP', parameter):
                     group_name = parameter[parameter.index("=")+1:]
                     group_name = group_name.replace("'", '')
                     group_name = group_name.replace(';', '')
                     group_name = group_name.strip()
-                    print('group_name:', group_name)
+                    # print('group_name:', group_name)
                 else:
                     print('OTHER PARAMETER:',parameter)
 
