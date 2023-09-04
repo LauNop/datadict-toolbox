@@ -15,6 +15,7 @@ def main(name):
         print(tab[6:-1])
         tab += [20]
         print(tab)
+
     elif name == "Tabular":
         folder_path = V.TABULAR_FOLDER
         file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
@@ -28,8 +29,6 @@ def main(name):
             print("Dictionnaire de donnée du catalogue:\n",etcc.cube_struct)
             etcc.save()
 
-
-
     elif name == "Multidim":
         folder_path = V.MULTIDIM_FOLDER
         file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
@@ -37,13 +36,14 @@ def main(name):
         print("Nbr fichier: ", len(file_names))
         for file_path in file_names:
             emcc = EMCC(file_path)
+            print(V.DASH_LINE)
             # print("Namespace:", emcc.namespace)
             # print("Database:", emcc.src_db)
             # print("Serveur:", emcc.src_serv)
             # print("Dimensions du Catalogque:", emcc.dims_catalog_name())
             # print("Cubes du catalogue:", emcc.cubes_name())
             # print("Dictionnaire de donnée du catalogue:\n",emcc.cube_struct)
-            # emcc.save()
+            emcc.save()
 
     elif name == "SQL":
         folder_path = V.DTSX_FOLDER

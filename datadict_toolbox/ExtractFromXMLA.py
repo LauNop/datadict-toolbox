@@ -7,10 +7,9 @@ from abc import ABC, abstractmethod
 
 
 class Extractor(ABC):
-    def __init__(self,file_path):
+    def __init__(self, file_path):
         self.cube_struct = None
         self.file_path = file_path
-
 
     @abstractmethod
     def build_cube_dict(self):
@@ -60,6 +59,7 @@ class Extractor(ABC):
     @abstractmethod
     def build_save_path(self):
         pass
+
     @abstractmethod
     def save(self, path=None):
         dossier = "excel_result/"
@@ -69,9 +69,9 @@ class Extractor(ABC):
         if path is None:
             path_build = self.build_save_path()
             path = "_".join(path_build) + ".xlsx"
-            path = dossier+path
+            path = dossier + path
         else:
-            path = dossier+path
+            path = dossier + path
 
         if os.path.exists(path):
             new_df = pd.DataFrame(self.cube_struct)
@@ -90,7 +90,7 @@ class Extractor(ABC):
 
 # Extract from tabular
 class ExtractorTabularCubeCatalog(Extractor):
-    def __init__(self,file_path):
+    def __init__(self, file_path):
         super().__init__(file_path)
         self.cube_struct = self.build_cube_dict()
         self.root = self.open_file()
@@ -145,7 +145,6 @@ class ExtractorTabularCubeCatalog(Extractor):
     def tables_element(self):
         tables_element = self.model_element()['tables']
         return tables_element
-
 
     def cube_table(self, dict_table):
         table_name = dict_table['name']
@@ -206,7 +205,7 @@ class ExtractorTabularCubeCatalog(Extractor):
         if path is None:
             return super().save()
         else:
-           return super().save(path)
+            return super().save(path)
 
 
 class ExtractorMultidimCubeCatalog(Extractor):
@@ -218,8 +217,6 @@ class ExtractorMultidimCubeCatalog(Extractor):
         self.db_element = self.db_element()
         self.src_db, self.src_serv = self.datasource()
         self.create_cube_struct()
-
-
 
     def build_cube_dict(self):
         with open('datadict_toolbox/usefull.json', 'r') as file:
@@ -325,7 +322,7 @@ class ExtractorMultidimCubeCatalog(Extractor):
         expression = ""
         is_measure = 0
         is_dimension = 1
-        is_calculated = "wip"
+        is_calculated = 0
         is_visible = "wip"
         c_dims = cube.find(self.balise_format("Dimensions")).findall(self.balise_format("Dimension"))
         for c_dim in c_dims:
@@ -352,7 +349,7 @@ class ExtractorMultidimCubeCatalog(Extractor):
         expression = ""
         is_measure = 1
         is_dimension = 0
-        is_calculated = "wip"
+        is_calculated = 0
         is_visible = "wip"
         measure_groups = cube.find(self.balise_format("MeasureGroups")).findall(self.balise_format("MeasureGroup"))
         for measure_group in measure_groups:
@@ -375,12 +372,73 @@ class ExtractorMultidimCubeCatalog(Extractor):
                 self.insert_structure(new_values)
         return
 
+    def analyse_calculate(self, raw_text, cube):
+        is_calculated = 1
+        is_measure = 1
+        is_dimension = 0
+        group_name = 'Unknown'
+        is_visible = 'Unknown'
+        data_type = 'Unknown'
+        src=''
+        text = re.split('CALCULATE;', raw_text)
+        calculates = re.split(r'CREATE', text[1].strip(), re.DOTALL)
+        calculates = calculates[1:]
+        print("=============================")
+        print(len(calculates))
+        print("Calcultes QUERY:\n", calculates)
+        print("=============================")
+        for element in calculates:
+            element = re.split(r'\sAS\s', element)
+            index = re.search(r'Measures', element[0]).end()
+            calculate_name = element[0][index + 2:].strip()
+            calculate_name = calculate_name[1:-1]
+            print("=============================")
+            print("CALCULATE NAME:", calculate_name)
+            print("=============================")
+            split_pattern = r'(\b[A-Z_]+\s=.*,)'
+            variables = re.split(split_pattern, element[1], re.DOTALL)
+            print("=============================")
+            print("VARIABLES", len(variables))
+            print(variables)
+            print("=============================")
+
+            expression = variables[0]
+            value_pattern = r'=\s+["\']? (\w)+["\']?"\s+[,;]$'
+            for parameter in variables[1:]:
+                if re.search(r'FORMAT_STRING', parameter):
+                    data_type = parameter[parameter.index("=")+1:]
+                    data_type = data_type.replace('"','')
+                    data_type = data_type.replace(',','')
+                    data_type = data_type.strip()
+                    print('data_type:', data_type)
+                elif re.search(r'VISIBLE', parameter):
+                    is_visible = parameter[parameter.index("=")+1:]
+                    is_visible = is_visible.replace(',', '')
+                    is_visible = is_visible.strip()
+                    is_visible = int(is_visible)
+                    print('is_visible:', is_visible)
+                elif re.search(r'ASSOCIATED_MEASURE_GROUP', parameter):
+                    group_name = parameter[parameter.index("=")+1:]
+                    group_name = group_name.replace("'", '')
+                    group_name = group_name.replace(';', '')
+                    group_name = group_name.strip()
+                    print('group_name:', group_name)
+                else:
+                    print('OTHER PARAMETER:',parameter)
+
+            new_values = [calculate_name, '', data_type, is_calculated, is_measure, is_dimension, expression,
+                          is_visible, group_name, self.cube_name(cube), self.catalog_name(), src]
+            self.insert_structure(new_values)
+        return
+
     def cube_calculate(self, cube):
         mdxscript = cube.find(self.balise_format("MdxScripts"))
         if mdxscript is not None:
             calculate_group = mdxscript.find(self.balise_format("MdxScript"))
-            raw_text = calculate_group.find(self.balise_format("Commands")).find(self.balise_format("Command")).find(self.balise_format("Text")).text
-            print(raw_text)
+            raw_text = calculate_group.find(self.balise_format("Commands")).find(self.balise_format("Command")).find(
+                self.balise_format("Text")).text
+            print("Raw_text:", raw_text)
+            self.analyse_calculate(raw_text, cube)
         return
 
     def create_cube_struct(self):
@@ -390,7 +448,7 @@ class ExtractorMultidimCubeCatalog(Extractor):
             self.cube_calculate(cube)
 
     def build_save_path(self):
-        return [self.catalog_name(),"mutldidim",str(len(self.cubes()))]
+        return [self.catalog_name(), "mutldidim", str(len(self.cubes()))]
 
     def save(self, path=None):
         if path is None:
