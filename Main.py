@@ -56,7 +56,7 @@ def main(name):
         queries = extract_erp_query(file_names)["SQL_QUERY"]
 
         count = 1
-        for query in queries[:10]:
+        for query in queries[:20]:
             print(count)
             print('SQL QUERY:\n', query)
             print(V.DASH_LINE)
@@ -69,12 +69,12 @@ def main(name):
             # print(kw_pos)
             # print(V.DASH_LINE)
 
-            kw_count = deduce.get_kw_count()
-            print(kw_count)
-            print(V.DASH_LINE)
-
-            print(deduce.get_kw_query())
-            print(V.DASH_LINE)
+            # kw_count = deduce.get_kw_count()
+            # print(kw_count)
+            # print(V.DASH_LINE)
+#
+            # print(deduce.get_kw_query())
+            # print(V.DASH_LINE)
 
             # b_s_f = deduce.between_select_from()
             # print("Nbr de b_s_f:",len(b_s_f))
@@ -94,17 +94,22 @@ def main(name):
             # print("Result of ANALYSE_COLUMN_EXPRESSION:")
             # print(deduce.analyse_column_expression())
             # print(V.DASH_LINE)
+#
+            # print("Result of DEDUCE_COLUMN_EXPRESSION")
+            # print(deduce.deduce_column_expression())
+            # print(V.DASH_LINE)
 
-            print("Result of DEDUCE_COLUMN_EXPRESSION")
-            print(deduce.deduce_column_expression())
-            print(V.DASH_LINE)
+            # print("IS SUBQUERIES:", deduce.get_is_got_subqueries())
+            # print(V.DASH_LINE)
+#
+            # print("TABLES:")
+            # table_exp = deduce.get_all_tables()
+            # print("Nbr table exp:",len(table_exp))
+            # print(table_exp)
+            # print(V.DASH_LINE)
 
-            print("IS SUBQUERIES:", deduce.get_is_got_subqueries())
-            print(V.DASH_LINE)
-
-            print("TABLES:")
-            print(deduce.get_all_tables())
-            print(V.DASH_LINE)
+            print('ANALYSE TABLES:')
+            deduce.analyse_tables()
 
             print(V.DASH_LINE)
             count += 1
@@ -115,4 +120,4 @@ def main(name):
 
 
 if __name__ == "__main__":
-    main("Multidim")
+    main("SQL")

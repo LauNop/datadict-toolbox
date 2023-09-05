@@ -16,6 +16,7 @@ class SQLDeduce:
         self.__kw_in_query = self.keywords_used()
         self.__is_got_subqueries = self.is_got_subqueries()
         self.__all_tables = self.table_statement()
+        self.inner_alias = None
 
     # Getters
     def get_kw_pos(self):
@@ -62,31 +63,36 @@ class SQLDeduce:
         file.close()
         return usefull_dict["Keywords"]
 
-    def keywords_pos(self,string_to_match = None):
+    def keyword_without_as(self):
+        keywords_without_as = self.__keywords.copy()
+        keywords_without_as.pop(keywords_without_as.index('AS'))
+        return keywords_without_as
+
+    def keywords_pos(self, string_to_match=None):
         if string_to_match is None:
             string_to_match = self.query
         search_pattern = "|".join(self.__keywords)
-        search_pattern = r'\b('+search_pattern+r')\b'
+        search_pattern = r'\b(' + search_pattern + r')\b'
         kw_pos_in_query = []
         match_iterator = re.finditer(search_pattern, string_to_match, re.IGNORECASE)
         for match in match_iterator:
             kw_pos_in_query.append((match.group(), match.span()))
         return kw_pos_in_query
 
-    def keywords_count(self,string_to_match = None):
+    def keywords_count(self, string_to_match=None):
         if string_to_match is None:
             string_to_match = self.__kw_pos_in_query
-        kw_dict = {key: [0,[]] for key in self.__keywords}
+        kw_dict = {key: [0, []] for key in self.__keywords}
         for kw_element in string_to_match:
             keyword, span = kw_element
             for pattern in self.__keywords:
-                if re.fullmatch(pattern,keyword,re.IGNORECASE):
+                if re.fullmatch(pattern, keyword, re.IGNORECASE):
                     kw_dict[pattern][0] += 1
                     kw_dict[pattern][1].append(span)
         kw_dict = {key: value for key, value in kw_dict.items() if value[0] > 0}
         return kw_dict
 
-    def keywords_used(self, dict_to_filter = None):
+    def keywords_used(self, dict_to_filter=None):
         if dict_to_filter is None:
             dict_to_filter = self.__kw_count_in_query
         keywords_in_query = [key for key, value in dict_to_filter.items()]
@@ -109,7 +115,7 @@ class SQLDeduce:
     def between_select_from(self):
         return self.between_2_keywords("SELECT", "FROM")
 
-    def check_after_split(self,string_list):
+    def check_after_split(self, string_list):
         parentheses_list = []
         all_fusion = []
         element_to_fuse = []
@@ -127,7 +133,7 @@ class SQLDeduce:
             elif not parentheses_list and element_to_fuse:
                 element_to_fuse.append(i)
                 if len(element_to_fuse) == 1:
-                    element_to_fuse.append(i+1)
+                    element_to_fuse.append(i + 1)
                 all_fusion.append(element_to_fuse)
                 element_to_fuse = []
             else:
@@ -139,12 +145,12 @@ class SQLDeduce:
                 if not last_index_reach:
                     new_string_list = string_list[:start]
                 else:
-                    new_string_list += string_list[last_index_reach+1:start]
+                    new_string_list += string_list[last_index_reach + 1:start]
                 new_element = ', '.join(string_list[start:end])
                 new_string_list.append(new_element)
                 last_index_reach = end
-            if not last_index_reach == len(string_list)-1:
-                new_string_list += string_list[last_index_reach+1:]
+            if not last_index_reach == len(string_list) - 1:
+                new_string_list += string_list[last_index_reach + 1:]
         else:
             new_string_list = string_list
         return new_string_list
@@ -155,7 +161,7 @@ class SQLDeduce:
         # split_pattern = r',\s*'
         elements_to_change = self.between_select_from()
         for i in range(len(elements_to_change)):
-            elements = re.split(split_pattern,elements_to_change[i])
+            elements = re.split(split_pattern, elements_to_change[i])
             elements = [elem.strip() for elem in elements]
             elements = self.check_after_split(elements)
             split_col_exp_dict[i] = elements
@@ -168,11 +174,11 @@ class SQLDeduce:
             for element in value:
                 keys_by_element = self.keywords_pos(element)
                 keys_by_element = self.keywords_count(keys_by_element)
-                tab = [element,keys_by_element]
+                tab = [element, keys_by_element]
                 dict_to_analyse[key].append(tab)
         return dict_to_analyse
 
-    def define_for_column_expression(self,column_expression,keys_of_ce):
+    def define_for_column_expression(self, column_expression, keys_of_ce):
         if not keys_of_ce:
             return {'Column': column_expression}
         elif keys_of_ce.get('AS', None):
@@ -194,8 +200,17 @@ class SQLDeduce:
                 analysed_dict[select_key].append(self.define_for_column_expression(column_expression, keys_of_ce))
         return analysed_dict
 
+    def deduce_subqueries_relation(self):
+        '''
+        Hello there I'm Mario and I'm Luigi,... WE ARE THE CREEPING SAME PEOPLE, MOUAAAAAAAAAHHHHHHHHHHHHHHHHHHH ah AH
+        MAKE RELATION WITH FROM SELECT JOIN
+        SELECT-0 FROM SELECT-1
+        '''
+
+        return
+
     def is_got_subqueries(self):
-        if len(self.between_select_from())>1:
+        if len(self.between_select_from()) > 1:
             return True
         else:
             return False
@@ -206,11 +221,18 @@ class SQLDeduce:
         for i in range(length):
             kw_element = self.__kw_pos_in_query[i]
             keyword, span = kw_element
-            if re.fullmatch('FROM',keyword,re.IGNORECASE):
+            if re.fullmatch('FROM', keyword, re.IGNORECASE):
                 start_a, end_a = span
-                if i != length-1:
-                    next_keyword, next_span = self.__kw_pos_in_query[i+1]
-                    start_b, end_b = next_span
+                if i != length - 1:
+                    i_temp = i + 1
+                    kw_temp, span_temp = self.__kw_pos_in_query[i_temp]
+                    while ((re.fullmatch('AS', kw_temp, re.IGNORECASE)
+                           or re.fullmatch('SELECT', kw_temp,re.IGNORECASE)
+                           or re.fullmatch('FROM', kw_temp, re.IGNORECASE))
+                           and i_temp != length - 1):
+                        i_temp += 1
+                        kw_temp, span_temp = self.__kw_pos_in_query[i_temp]
+                    start_b, end_b = span_temp
                     statement = self.query[end_a:start_b].strip()
                     table_statement_list.append(statement)
                 else:
@@ -218,6 +240,25 @@ class SQLDeduce:
                     table_statement_list.append(statement)
         return table_statement_list
 
+    def is_table_name(self,table_statement):
+        keywords_without_as = self.keyword_without_as()
+        search_pattern = "|".join(keywords_without_as)
+        search_pattern = r'\b(' + search_pattern + r')\b'
+        if re.search(search_pattern, table_statement,re.IGNORECASE):
+            return False
+        return True
+
+    def table_alias(self, table_statement):
+        if self.is_table_name(table_statement):
+            statement_to_analyse = re.split(r'\s+',table_statement)
+            print(statement_to_analyse)
+
+        return
+
+    def analyse_tables(self):
+        for statement in self.__all_tables:
+            self.table_alias(statement)
+        return
 
 if __name__ == "__main__":
     print("Yes I try to extract info from select sql query")

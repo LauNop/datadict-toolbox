@@ -29,7 +29,8 @@
     "ASCIICOMPARE",
     "COALESCE",
     "CASE",
-    "CAST"
+    "CAST",
+    "ON"
   ],
   "Multidim": [
     "ATTRIBUTE_NAME",
