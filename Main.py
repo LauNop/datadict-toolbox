@@ -3,19 +3,16 @@ from env import envVar as V
 from datadict_toolbox import SQLDeduce
 from datadict_toolbox import extract_erp_query
 from datadict_toolbox import ExtractorMultidimCubeCatalog as EMCC, ExtractorTabularCubeCatalog as ETCC
-
+import re
 
 def main(name):
     if name == "Exp":
-        tab = list(range(10))
-        print(tab[5:8])
-        print(tab[:0])
-        print(tab[:5])
-        print(tab[5:5])
-        print(tab[6:-1])
-        tab += [20]
-        print(tab)
-
+        for j in range(10):
+            print("*"*j)
+            for i in range(20):
+                print(i)
+                if i==10:
+                    break
     elif name == "Tabular":
         folder_path = V.TABULAR_FOLDER
         file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
@@ -56,7 +53,7 @@ def main(name):
         queries = extract_erp_query(file_names)["SQL_QUERY"]
 
         count = 1
-        for query in queries[:20]:
+        for query in queries[8:9]:
             print(count)
             print('SQL QUERY:\n', query)
             print(V.DASH_LINE)
@@ -64,22 +61,35 @@ def main(name):
             deduce = SQLDeduce(query)
             print(V.DASH_LINE)
 
-            # kw_pos = deduce.get_kw_pos()
-            # print("Nbr keyword: ", len(kw_pos))
-            # print(kw_pos)
-            # print(V.DASH_LINE)
+            kw_pos = deduce.get_kw_pos()
+            print("Nbr keyword: ", len(kw_pos))
+            print(kw_pos)
+            print(V.DASH_LINE)
 
-            # kw_count = deduce.get_kw_count()
-            # print(kw_count)
-            # print(V.DASH_LINE)
-#
-            # print(deduce.get_kw_query())
-            # print(V.DASH_LINE)
+            print('PARSE LIST:')
+            print(deduce.found_parse())
+            print(V.DASH_LINE)
 
-            # b_s_f = deduce.between_select_from()
-            # print("Nbr de b_s_f:",len(b_s_f))
-            # print(b_s_f)
-            # print(V.DASH_LINE)
+            kw_parse_pos = deduce.keyword_parse_pos()
+            print("Keyword and parse sequence:",len(kw_parse_pos),'\n',kw_parse_pos)
+            print(V.DASH_LINE)
+
+            kw_count = deduce.get_kw_count()
+            print(kw_count)
+            print(V.DASH_LINE)
+
+            nest_keyword = deduce.nest_keyword()
+            print('Nbr:',len(nest_keyword))
+            print(nest_keyword)
+            print(V.DASH_LINE)
+
+            print(deduce.get_kw_query())
+            print(V.DASH_LINE)
+
+            b_s_f = deduce.between_select_from()
+            print("Nbr de b_s_f:",len(b_s_f))
+            print(b_s_f)
+            print(V.DASH_LINE)
 
             # column_exp = deduce.split_column_expression()
             # print("Nbr de b_s_f",len(column_exp))
@@ -91,22 +101,22 @@ def main(name):
             #         print(element)
             # print(V.DASH_LINE)
 
-            # print("Result of ANALYSE_COLUMN_EXPRESSION:")
-            # print(deduce.analyse_column_expression())
-            # print(V.DASH_LINE)
-#
-            # print("Result of DEDUCE_COLUMN_EXPRESSION")
-            # print(deduce.deduce_column_expression())
-            # print(V.DASH_LINE)
+            print("Result of ANALYSE_COLUMN_EXPRESSION:")
+            print(deduce.analyse_column_expression())
+            print(V.DASH_LINE)
+
+            print("Result of DEDUCE_COLUMN_EXPRESSION")
+            print(deduce.deduce_column_expression())
+            print(V.DASH_LINE)
 
             # print("IS SUBQUERIES:", deduce.get_is_got_subqueries())
             # print(V.DASH_LINE)
 #
-            # print("TABLES:")
-            # table_exp = deduce.get_all_tables()
-            # print("Nbr table exp:",len(table_exp))
-            # print(table_exp)
-            # print(V.DASH_LINE)
+            print("TABLES:")
+            table_exp = deduce.get_all_tables()
+            print("Nbr table exp:",len(table_exp))
+            print(table_exp)
+            print(V.DASH_LINE)
 
             print('ANALYSE TABLES:')
             deduce.analyse_tables()

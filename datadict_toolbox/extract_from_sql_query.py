@@ -9,6 +9,7 @@ class SQLDeduce:
         # self.query_split()
         print(self.query_type())
         self.clean()
+        print(self.query)
 
         self.__keywords = self.keyword_table()
         self.__kw_pos_in_query = self.keywords_pos()
@@ -69,15 +70,40 @@ class SQLDeduce:
         return keywords_without_as
 
     def keywords_pos(self, string_to_match=None):
+        matches_list = self.__keywords.copy()
         if string_to_match is None:
             string_to_match = self.query
-        search_pattern = "|".join(self.__keywords)
+        search_pattern = "|".join(matches_list)
         search_pattern = r'\b(' + search_pattern + r')\b'
         kw_pos_in_query = []
         match_iterator = re.finditer(search_pattern, string_to_match, re.IGNORECASE)
         for match in match_iterator:
             kw_pos_in_query.append((match.group(), match.span()))
         return kw_pos_in_query
+
+    def found_parse(self):
+        parse_list = []
+        search_pattern = r'(\(|\))'
+        match_iterator = re.finditer(search_pattern, self.query)
+        for match in match_iterator:
+            parse_list.append((match.group(), match.span()))
+        return parse_list
+
+    def keyword_parse_pos(self):
+        through_list = self.__kw_pos_in_query.copy()
+        output_list = through_list.copy()
+        parse_list = self.found_parse()
+        for element in parse_list:
+            _, span = element
+            start_p, _ = span
+            for i in range(len(through_list)):
+                _, key_span = through_list[i]
+                start_k,_ = key_span
+                if start_k > start_p:
+                    through_list.insert(i, element)
+                    break
+
+        return through_list
 
     def keywords_count(self, string_to_match=None):
         if string_to_match is None:
@@ -97,6 +123,27 @@ class SQLDeduce:
             dict_to_filter = self.__kw_count_in_query
         keywords_in_query = [key for key, value in dict_to_filter.items()]
         return keywords_in_query
+
+    def nest_keyword(self):
+        kw_parse_pos = self.keyword_parse_pos()
+        key = 'Nested'
+        kw_with_nest_pos = []
+        is_nested = False
+        nest_dict = {}
+        for i in range(len(kw_parse_pos)):
+            string, span = kw_parse_pos[i]
+            if re.match(r'\(',string) and not is_nested:
+                is_nested = True
+                nest_dict = {key: []}
+            elif re.match(r'\)',string):
+                kw_with_nest_pos.append(nest_dict)
+                is_nested = False
+                nest_dict = {}
+            elif is_nested:
+                nest_dict[key].append(kw_parse_pos[i])
+            else:
+                kw_with_nest_pos.append(kw_parse_pos[i])
+        return kw_with_nest_pos
 
     def between_2_keywords(self, keyword_before, keyword_after):
         b_s_f_list = []
