@@ -9,7 +9,6 @@ class SQLDeduce:
         # self.query_split()
         print(self.query_type())
         self.clean()
-        print(self.query)
 
         self.__keywords = self.keyword_table()
         self.__kw_pos_in_query = self.keywords_pos()
@@ -17,6 +16,7 @@ class SQLDeduce:
         self.__kw_in_query = self.keywords_used()
         self.__is_got_subqueries = self.is_got_subqueries()
         self.__all_tables = self.table_statement()
+        self.relation_list = []
         self.inner_alias = None
 
     # Getters
@@ -57,6 +57,7 @@ class SQLDeduce:
             return "SELECT QUERY"
         return
 
+    # Usefull
     def keyword_table(self):
         with open('datadict_toolbox/usefull.json', 'r') as file:
             json_content = file.read()
@@ -69,6 +70,7 @@ class SQLDeduce:
         keywords_without_as.pop(keywords_without_as.index('AS'))
         return keywords_without_as
 
+    # Usefull
     def keywords_pos(self, string_to_match=None):
         matches_list = self.__keywords.copy()
         if string_to_match is None:
@@ -81,6 +83,7 @@ class SQLDeduce:
             kw_pos_in_query.append((match.group(), match.span()))
         return kw_pos_in_query
 
+    # Usefull
     def found_parse(self):
         parse_list = []
         search_pattern = r'(\(|\))'
@@ -89,6 +92,26 @@ class SQLDeduce:
             parse_list.append((match.group(), match.span()))
         return parse_list
 
+    def useless_parse_pop(self):
+        list_for = self.keyword_parse_pos()
+        is_previous_parse = False
+        index_to_pop = []
+        # parse_pilo = []
+        for i in range(len(list_for)):
+            string, span = list_for[i]
+            if re.match(r'\(', string):
+                is_previous_parse = True
+                index_to_pop.append(i)
+            elif re.match(r'\)', string) and is_previous_parse:
+                index_to_pop.append(i)
+                for index in index_to_pop:
+                    list_for.pop(index)
+            else:
+                is_previous_parse = False
+                index_to_pop = []
+
+
+    # Usefull
     def keyword_parse_pos(self):
         through_list = self.__kw_pos_in_query.copy()
         output_list = through_list.copy()
@@ -105,6 +128,7 @@ class SQLDeduce:
 
         return through_list
 
+    # Usefull
     def keywords_count(self, string_to_match=None):
         if string_to_match is None:
             string_to_match = self.__kw_pos_in_query
@@ -124,27 +148,28 @@ class SQLDeduce:
         keywords_in_query = [key for key, value in dict_to_filter.items()]
         return keywords_in_query
 
-    def nest_keyword(self):
-        kw_parse_pos = self.keyword_parse_pos()
-        key = 'Nested'
-        kw_with_nest_pos = []
-        is_nested = False
-        nest_dict = {}
-        for i in range(len(kw_parse_pos)):
-            string, span = kw_parse_pos[i]
-            if re.match(r'\(',string) and not is_nested:
-                is_nested = True
-                nest_dict = {key: []}
-            elif re.match(r'\)',string):
-                kw_with_nest_pos.append(nest_dict)
-                is_nested = False
-                nest_dict = {}
-            elif is_nested:
-                nest_dict[key].append(kw_parse_pos[i])
+    # Usefull
+    def nest_keyword(self,list_to_nest=None):
+        nest = Nester()
+        if list_to_nest is None:
+            list_to_nest = self.keyword_parse_pos()
+        kw_with_nester = []
+        for i in range(len(list_to_nest)):
+            string, span = list_to_nest[i]
+            if re.match(r'\(', string):
+                kw_with_nester.pop()
+                nest.add(list_to_nest[i-1])
+            elif re.match(r'\)', string):
+                result = nest.submit()
+                if result is not None:
+                    kw_with_nester.append(result)
+            elif nest.is_nesting:
+                nest.append(list_to_nest[i])
             else:
-                kw_with_nest_pos.append(kw_parse_pos[i])
-        return kw_with_nest_pos
+                kw_with_nester.append(list_to_nest[i])
+        return kw_with_nester
 
+    # Usefull
     def between_2_keywords(self, keyword_before, keyword_after):
         b_s_f_list = []
         boundary_a = self.__kw_count_in_query[keyword_before][1]
@@ -162,6 +187,23 @@ class SQLDeduce:
     def between_select_from(self):
         return self.between_2_keywords("SELECT", "FROM")
 
+    def select_from_relation(self, key_list=None, select_count=-1):
+        select_from_couple = []
+        if key_list is None:
+            key_list = self.nest_keyword()
+        for i in range(len(key_list)):
+            if isinstance(key_list[i],tuple):
+                string, _ = key_list[i]
+                if re.match(r'SELECT', string, re.IGNORECASE):
+                    select_from_couple.append(key_list[i])
+                    self.relation_list.append(select_count)
+                elif re.match(r'(JOIN|INNER JOIN|LEFT JOIN|RIGHT JOIN|FULL JOIN)',string,re.IGNORECASE):
+                    pass
+
+
+        return
+
+    # Usefull
     def check_after_split(self, string_list):
         parentheses_list = []
         all_fusion = []
@@ -202,6 +244,7 @@ class SQLDeduce:
             new_string_list = string_list
         return new_string_list
 
+    # Usefull
     def split_column_expression(self):
         split_col_exp_dict = {}
         split_pattern = r',\s*(?![^()]*\))'
@@ -214,6 +257,7 @@ class SQLDeduce:
             split_col_exp_dict[i] = elements
         return split_col_exp_dict
 
+    # Usefull
     def analyse_column_expression(self):
         dict_to_analyse = {}
         for key, value in self.split_column_expression().items():
@@ -225,6 +269,7 @@ class SQLDeduce:
                 dict_to_analyse[key].append(tab)
         return dict_to_analyse
 
+    # Usefull
     def define_for_column_expression(self, column_expression, keys_of_ce):
         if not keys_of_ce:
             return {'Column': column_expression}
@@ -236,6 +281,7 @@ class SQLDeduce:
         else:
             print('key word Not handle')
 
+    # Usefull
     def deduce_column_expression(self):
         deduce_dict = self.analyse_column_expression()
         analysed_dict = {}
@@ -247,21 +293,14 @@ class SQLDeduce:
                 analysed_dict[select_key].append(self.define_for_column_expression(column_expression, keys_of_ce))
         return analysed_dict
 
-    def deduce_subqueries_relation(self):
-        '''
-        Hello there I'm Mario and I'm Luigi,... WE ARE THE CREEPING SAME PEOPLE, MOUAAAAAAAAAHHHHHHHHHHHHHHHHHHH ah AH
-        MAKE RELATION WITH FROM SELECT JOIN
-        SELECT-0 FROM SELECT-1
-        '''
-
-        return
-
+    # Usefull
     def is_got_subqueries(self):
         if len(self.between_select_from()) > 1:
             return True
         else:
             return False
 
+    # Usefull
     def table_statement(self):
         length = len(self.__kw_pos_in_query)
         table_statement_list = []
@@ -287,6 +326,7 @@ class SQLDeduce:
                     table_statement_list.append(statement)
         return table_statement_list
 
+    # Usefull
     def is_table_name(self,table_statement):
         keywords_without_as = self.keyword_without_as()
         search_pattern = "|".join(keywords_without_as)
@@ -295,6 +335,7 @@ class SQLDeduce:
             return False
         return True
 
+    # Usefull
     def table_alias(self, table_statement):
         if self.is_table_name(table_statement):
             statement_to_analyse = re.split(r'\s+',table_statement)
@@ -302,10 +343,45 @@ class SQLDeduce:
 
         return
 
+    # Usefull
     def analyse_tables(self):
         for statement in self.__all_tables:
             self.table_alias(statement)
         return
+
+
+class Nester:
+    def __init__(self):
+        self.dict_list = []
+        self.is_nesting = False
+
+    def add(self,nester):
+        self.is_nesting = True
+        output = {'Nester': nester, 'Nested': []}
+        self.dict_list.append(output)
+        return
+
+    def append(self,element):
+        dict_to_append = self.dict_list[-1]
+        dict_to_append['Nested'].append(element)
+        return
+
+    def submit(self):
+        length = len(self.dict_list)
+        if length == 0:
+            # Error
+            print("Can't submit something empty")
+        elif length == 1:
+            self.is_nesting = False
+            output = self.dict_list[0]
+            self.dict_list = []
+            return output
+        else:
+            finished_dict = self.dict_list[-1]
+            self.dict_list.pop()
+            self.append(finished_dict)
+        return
+
 
 if __name__ == "__main__":
     print("Yes I try to extract info from select sql query")
