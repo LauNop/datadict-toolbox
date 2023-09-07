@@ -174,6 +174,11 @@ class SQLDeduce:
                     kw_with_nester.append(actual)
         return kw_with_nester
 
+    def select_tree(self):
+        tree = Tree()
+
+        return
+
     # Usefull
     def between_2_keywords(self, keyword_before, keyword_after):
         b_s_f_list = []
@@ -191,22 +196,6 @@ class SQLDeduce:
 
     def between_select_from(self):
         return self.between_2_keywords("SELECT", "FROM")
-
-    def select_from_relation(self, key_list=None, select_count=-1):
-        select_from_couple = []
-        if key_list is None:
-            key_list = self.nest_keyword()
-        for i in range(len(key_list)):
-            if isinstance(key_list[i],tuple):
-                string, _ = key_list[i]
-                if re.match(r'SELECT', string, re.IGNORECASE):
-                    select_from_couple.append(key_list[i])
-                    self.relation_list.append(select_count)
-                elif re.match(r'(JOIN|INNER JOIN|LEFT JOIN|RIGHT JOIN|FULL JOIN)',string,re.IGNORECASE):
-                    pass
-
-
-        return
 
     # Usefull
     def check_after_split(self, string_list):
@@ -386,6 +375,52 @@ class Nester:
             self.dict_list.pop()
             self.append(finished_dict)
         return
+
+
+class Tree:
+    def __init__(self,list_for_tree):
+        self.list_for_tree = list_for_tree
+        self.head = None
+        self.create_tree()
+
+    def create_tree(self):
+        depth = 0
+        for element in self.list_for_tree:
+            if isinstance(element,tuple):
+                str_, span = element
+                if re.search(r'SELECT',str_,re.IGNORECASE):
+                    node = Node(0,'SF')
+                    node.set_select(element)
+                    self.head = node
+                elif re.search(r'FROM', str_, re.IGNORECASE):
+                    self.head.set_from(element)
+
+
+class Node:
+    def __init__(self, id_, type_, parent=None):
+        self.id = id_
+        self.type = type_
+        self.parent = parent
+        if self.type == 'SF' and self.parent is None:
+            self.select_ = None
+            self.from_ = None
+        elif self.type == 'J':
+            self.join_ = None
+        elif self.type == 'T':
+            self.table = None
+        else:
+            print("Problème")
+
+    def set_select(self,select):
+        self.select_ = select
+        return
+
+    def set_from(self,from_):
+        self.from_ = from_
+        return
+
+
+
 
 
 if __name__ == "__main__":
