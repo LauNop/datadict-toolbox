@@ -93,7 +93,7 @@ class SQLDeduce:
         return parse_list
 
     def useless_parse_pop(self, kw_parse_list):
-        i=0
+        i = 0
         for i in range(1, len(kw_parse_list)):
             previous = kw_parse_list[i - 1]
             str_previous, span_previous = previous
@@ -147,19 +147,31 @@ class SQLDeduce:
         if list_to_nest is None:
             list_to_nest = self.keyword_parse_pos()
         kw_with_nester = []
-        for i in range(len(list_to_nest)):
-            string, span = list_to_nest[i]
-            if re.match(r'\(', string):
-                kw_with_nester.pop()
-                nest.add(list_to_nest[i-1])
-            elif re.match(r'\)', string):
+        for i in range(1,len(list_to_nest)):
+            previous = list_to_nest[i - 1]
+            actual = list_to_nest[i]
+            str_, _ = actual
+            str_previous, _ = previous
+            if re.match(r'\(', str_):
+                nest.add(previous)
+            elif re.match(r'\)', str_):
+                if not re.match(r'\)', str_previous):
+                    nest.append(previous)
                 result = nest.submit()
                 if result is not None:
                     kw_with_nester.append(result)
             elif nest.is_nesting:
-                nest.append(list_to_nest[i])
+                if re.match(r'\(', str_previous) or re.match(r'\)', str_previous):
+                    pass
+                else:
+                    nest.append(previous)
             else:
-                kw_with_nester.append(list_to_nest[i])
+                if re.match(r'\(', str_previous) or re.match(r'\)', str_previous):
+                    pass
+                else:
+                    kw_with_nester.append(previous)
+                if i == len(list_to_nest) - 1:
+                    kw_with_nester.append(actual)
         return kw_with_nester
 
     # Usefull

@@ -64,9 +64,9 @@ def main(name):
             # print(kw_pos)
             # print(V.DASH_LINE)
 
-            print('PARSE LIST:')
-            print(deduce.found_parse())
-            print(V.DASH_LINE)
+            # print('PARSE LIST:')
+            # print(deduce.found_parse())
+            # print(V.DASH_LINE)
 
             kw_parse_pos = deduce.keyword_parse_pos()
             print("Keyword and parse sequence:",len(kw_parse_pos),'\n',kw_parse_pos)
@@ -76,10 +76,10 @@ def main(name):
             # print(kw_count)
             # print(V.DASH_LINE)
 
-            # nest_keyword = deduce.nest_keyword()
-            # print('Nbr:',len(nest_keyword))
-            # print(nest_keyword)
-            # print(V.DASH_LINE)
+            nest_keyword = deduce.nest_keyword()
+            print('Nbr:',len(nest_keyword))
+            print(nest_keyword)
+            print(V.DASH_LINE)
 
             # print(deduce.get_kw_query())
             # print(V.DASH_LINE)
