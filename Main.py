@@ -9,9 +9,7 @@ def main(name):
     if name == "Exp":
         tab = list(range(10))
         print(tab)
-        tab.pop(2)
-        print(tab)
-        tab.pop(4)
+        del tab[2:4]
         print(tab)
     elif name == "Tabular":
         folder_path = V.TABULAR_FOLDER

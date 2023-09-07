@@ -92,24 +92,18 @@ class SQLDeduce:
             parse_list.append((match.group(), match.span()))
         return parse_list
 
-    def useless_parse_pop(self):
-        list_for = self.keyword_parse_pos()
-        is_previous_parse = False
-        index_to_pop = []
-        # parse_pilo = []
-        for i in range(len(list_for)):
-            string, span = list_for[i]
-            if re.match(r'\(', string):
-                is_previous_parse = True
-                index_to_pop.append(i)
-            elif re.match(r'\)', string) and is_previous_parse:
-                index_to_pop.append(i)
-                for index in index_to_pop:
-                    list_for.pop(index)
-            else:
-                is_previous_parse = False
-                index_to_pop = []
-
+    def useless_parse_pop(self, kw_parse_list):
+        i=0
+        for i in range(1, len(kw_parse_list)):
+            previous = kw_parse_list[i - 1]
+            str_previous, span_previous = previous
+            str_, span = kw_parse_list[i]
+            if re.match(r'\(', str_previous) and re.match(r'\)', str_):
+                del kw_parse_list[i - 1:i + 1]
+                break
+        if i == len(kw_parse_list)-1:
+            return kw_parse_list
+        return self.useless_parse_pop(kw_parse_list)
 
     # Usefull
     def keyword_parse_pos(self):
@@ -125,8 +119,7 @@ class SQLDeduce:
                 if start_k > start_p:
                     through_list.insert(i, element)
                     break
-
-        return through_list
+        return self.useless_parse_pop(through_list)
 
     # Usefull
     def keywords_count(self, string_to_match=None):
