@@ -101,7 +101,7 @@ class SQLDeduce:
             if re.match(r'\(', str_previous) and re.match(r'\)', str_):
                 del kw_parse_list[i - 1:i + 1]
                 break
-        if i == len(kw_parse_list)-1:
+        if i == len(kw_parse_list) - 1:
             return kw_parse_list
         return self.useless_parse_pop(kw_parse_list)
 
@@ -115,7 +115,7 @@ class SQLDeduce:
             start_p, _ = span
             for i in range(len(through_list)):
                 _, key_span = through_list[i]
-                start_k,_ = key_span
+                start_k, _ = key_span
                 if start_k > start_p:
                     through_list.insert(i, element)
                     break
@@ -142,12 +142,12 @@ class SQLDeduce:
         return keywords_in_query
 
     # Usefull
-    def nest_keyword(self,list_to_nest=None):
+    def nest_keyword(self, list_to_nest=None):
         nest = Nester()
         if list_to_nest is None:
             list_to_nest = self.keyword_parse_pos()
         kw_with_nester = []
-        for i in range(1,len(list_to_nest)):
+        for i in range(1, len(list_to_nest)):
             previous = list_to_nest[i - 1]
             actual = list_to_nest[i]
             str_, _ = actual
@@ -185,7 +185,7 @@ class SQLDeduce:
             node_dict[num_key] = node_
             return
 
-        def add_table_node(index,list_for_sub_tree,element):
+        def add_table_node(index, list_for_sub_tree, element):
             if index == len(list_for_sub_tree) - 1:
                 next_element = 'end'
             else:
@@ -200,9 +200,9 @@ class SQLDeduce:
         def tree_per_list(list_for_sub_tree):
             for i in range(len(list_for_sub_tree)):
                 element = list_for_sub_tree[i]
-                if isinstance(element,tuple):
+                if isinstance(element, tuple):
                     str_, span = element
-                    if re.search(r'SELECT',str_, re.IGNORECASE):
+                    if re.search(r'SELECT', str_, re.IGNORECASE):
                         if mother_node_list:
                             parent_key = mother_node_list[-1]
                         else:
@@ -214,7 +214,7 @@ class SQLDeduce:
                         node_dict_key = list(node_dict.keys())[-1]
                         node_dict[node_dict_key]['content'].append(element)
                         mother_node_list.append(node_dict_key)
-                        add_table_node(i,list_for_sub_tree,element)
+                        add_table_node(i, list_for_sub_tree, element)
 
                     elif re.search(r'JOIN', str_, re.IGNORECASE):
                         parent_key = mother_node_list[-1]
@@ -222,7 +222,7 @@ class SQLDeduce:
                         add_node(node)
                         node_dict_key = list(node_dict.keys())[-1]
                         mother_node_list.append(node_dict_key)
-                        add_table_node(i,list_for_sub_tree,element)
+                        add_table_node(i, list_for_sub_tree, element)
 
                 elif isinstance(element, dict):
                     nester = element['Nester']
@@ -257,8 +257,57 @@ class SQLDeduce:
 
         return node_dict
 
+    def deduce_from_tree(self, start_key=0):
+        tree_dict = self.build_select_tree()
+        if isinstance(start_key, int):
+            node = tree_dict[start_key]
+            children = node['child']
+            sub_output = self.deduce_from_tree(children)
+            # Analyse le noeud actuelle soit un SF soit un JOIN
+        elif isinstance(start_key, list):
+            sub_outputs = []
+            if start_key:
+                for key in start_key:
+                    sub_outputs.append(self.deduce_from_tree(key))
+                # Analyse le noeud actuelle soit un SF soit un JOIN
+                return sub_outputs
+            else:
+                # Node TABLE decrypt
+                node = tree_dict[start_key]
+                if node['type'] == 'TABLE':
+                    return self.decrypt_table_node(node)
+        return
 
-    # Usefull
+    def decrypt_table_node(self, node):
+        boundaries = node['content']
+        boundary_1 = boundaries[0]
+        boundary_2 = boundaries[1]
+        _, start = boundary_1
+        end, _ = boundary_2
+        statement = self.query[start:end].strip()
+        statement_list = statement.split(' ')
+        if len(statement_list) == 2:
+            alias = statement_list[-1]
+        else:
+            alias = None
+        table_statement = statement_list[0].split('.')
+        if len(table_statement) == 2:
+            database = table_statement[0]
+            table = table_statement[1]
+        else:
+            database = None
+            table = table_statement[0]
+
+        output = {'database_name': database, 'table_name': table, 'table_alias': alias}
+        return output
+        # Usefull
+
+    def decrypt_JOIN_node(self):
+        return
+
+    def decrypt_SF_node(self):
+        return
+
     def between_2_keywords(self, keyword_before, keyword_after):
         b_s_f_list = []
         boundary_a = self.__kw_count_in_query[keyword_before][1]
@@ -386,8 +435,8 @@ class SQLDeduce:
                     i_temp = i + 1
                     kw_temp, span_temp = self.__kw_pos_in_query[i_temp]
                     while ((re.fullmatch('AS', kw_temp, re.IGNORECASE)
-                           or re.fullmatch('SELECT', kw_temp,re.IGNORECASE)
-                           or re.fullmatch('FROM', kw_temp, re.IGNORECASE))
+                            or re.fullmatch('SELECT', kw_temp, re.IGNORECASE)
+                            or re.fullmatch('FROM', kw_temp, re.IGNORECASE))
                            and i_temp != length - 1):
                         i_temp += 1
                         kw_temp, span_temp = self.__kw_pos_in_query[i_temp]
@@ -400,18 +449,18 @@ class SQLDeduce:
         return table_statement_list
 
     # Usefull
-    def is_table_name(self,table_statement):
+    def is_table_name(self, table_statement):
         keywords_without_as = self.keyword_without_as()
         search_pattern = "|".join(keywords_without_as)
         search_pattern = r'\b(' + search_pattern + r')\b'
-        if re.search(search_pattern, table_statement,re.IGNORECASE):
+        if re.search(search_pattern, table_statement, re.IGNORECASE):
             return False
         return True
 
     # Usefull
     def table_alias(self, table_statement):
         if self.is_table_name(table_statement):
-            statement_to_analyse = re.split(r'\s+',table_statement)
+            statement_to_analyse = re.split(r'\s+', table_statement)
             print(statement_to_analyse)
 
         return
@@ -428,13 +477,13 @@ class Nester:
         self.dict_list = []
         self.is_nesting = False
 
-    def add(self,nester):
+    def add(self, nester):
         self.is_nesting = True
         output = {'Nester': nester, 'Nested': []}
         self.dict_list.append(output)
         return
 
-    def append(self,element):
+    def append(self, element):
         dict_to_append = self.dict_list[-1]
         dict_to_append['Nested'].append(element)
         return

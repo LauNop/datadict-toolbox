@@ -7,8 +7,11 @@ import re
 
 def main(name):
     if name == "Exp":
-        dict_ = {0:'lol',1:'One'}
-        print(dict_[list(dict_.keys())[-1]])
+        tab = list(range(5))
+        print(tab)
+        tab.insert(0,[0,1])
+        print(tab)
+
 
     elif name == "Tabular":
         folder_path = V.TABULAR_FOLDER
@@ -130,4 +133,4 @@ def main(name):
 
 
 if __name__ == "__main__":
-    main("SQL")
+    main("Exp")
