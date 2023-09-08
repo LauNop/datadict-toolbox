@@ -186,10 +186,10 @@ class SQLDeduce:
             return
 
         def add_table_node(index, list_for_sub_tree, element):
-            if index == len(list_for_sub_tree) - 1:
+            if index == len(list_for_tree) - 1:
                 next_element = 'end'
             else:
-                next_element = list_for_sub_tree[index + 1]
+                next_element = self.__kw_pos_in_query[self.__kw_pos_in_query.index(element)+1]
                 if isinstance(next_element, dict):
                     next_element = next_element['Nester']
             parent_key_ = mother_node_list[-1]
@@ -262,28 +262,38 @@ class SQLDeduce:
         if isinstance(start_key, int):
             node = tree_dict[start_key]
             children = node['child']
-            sub_output = self.deduce_from_tree(children)
+            if node['type'] == 'SelectFrom':
+                sub_output = self.deduce_from_tree(children)
+                output = self.decrypt_SF_node(node)
+                sub_output.append(output)
+                return sub_output
+            elif node['type'] == 'TABLE':
+                return self.decrypt_table_node(node)
+            elif node['type'] == 'JOIN':
+                sub_output = self.deduce_from_tree(children)
+                return sub_output
+            return
             # Analyse le noeud actuelle soit un SF soit un JOIN
         elif isinstance(start_key, list):
             sub_outputs = []
             if start_key:
                 for key in start_key:
                     sub_outputs.append(self.deduce_from_tree(key))
-                # Analyse le noeud actuelle soit un SF soit un JOIN
                 return sub_outputs
-            else:
-                # Node TABLE decrypt
-                node = tree_dict[start_key]
-                if node['type'] == 'TABLE':
-                    return self.decrypt_table_node(node)
+            return
+
+
         return
 
     def decrypt_table_node(self, node):
         boundaries = node['content']
-        boundary_1 = boundaries[0]
-        boundary_2 = boundaries[1]
+        _, boundary_1 = boundaries[0]
+        _, boundary_2 = boundaries[1]
         _, start = boundary_1
-        end, _ = boundary_2
+        if boundary_2 == 'end':
+            end = len(self.query)-1
+        else:
+            end, _ = boundary_2
         statement = self.query[start:end].strip()
         statement_list = statement.split(' ')
         if len(statement_list) == 2:
@@ -302,11 +312,15 @@ class SQLDeduce:
         return output
         # Usefull
 
-    def decrypt_JOIN_node(self):
-        return
-
-    def decrypt_SF_node(self):
-        return
+    def decrypt_SF_node(self,node):
+        boundaries = node['content']
+        _, boundary_1 = boundaries[0]
+        _, boundary_2 = boundaries[1]
+        _, start = boundary_1
+        end, _ = boundary_2
+        column_expressions = self.split_column_expression(start,end)
+        output = self.deduce_column_expression_list(column_expressions)
+        return output
 
     def between_2_keywords(self, keyword_before, keyword_after):
         b_s_f_list = []
@@ -367,19 +381,15 @@ class SQLDeduce:
         return new_string_list
 
     # Usefull
-    def split_column_expression(self):
-        split_col_exp_dict = {}
+    def split_column_expression(self,start,end):
         split_pattern = r',\s*(?![^()]*\))'
         # split_pattern = r',\s*'
-        elements_to_change = self.between_select_from()
-        for i in range(len(elements_to_change)):
-            elements = re.split(split_pattern, elements_to_change[i])
-            elements = [elem.strip() for elem in elements]
-            elements = self.check_after_split(elements)
-            split_col_exp_dict[i] = elements
-        return split_col_exp_dict
+        elements_to_change = self.query[start:end]
+        elements = re.split(split_pattern, elements_to_change)
+        elements = [elem.strip() for elem in elements]
+        output = self.check_after_split(elements)
+        return output
 
-    # Usefull
     def analyse_column_expression(self):
         dict_to_analyse = {}
         for key, value in self.split_column_expression().items():
@@ -392,28 +402,25 @@ class SQLDeduce:
         return dict_to_analyse
 
     # Usefull
-    def define_for_column_expression(self, column_expression, keys_of_ce):
-        if not keys_of_ce:
-            return {'Column': column_expression}
-        elif keys_of_ce.get('AS', None):
+    def deduce_column_expression(self, column_expression):
+        keys_of_ce = self.keywords_count(self.keywords_pos(column_expression))
+        if keys_of_ce.get('AS',None):
             as_start, as_end = keys_of_ce['AS'][1][-1]
-            statement = column_expression[:as_start].strip()
+            column = column_expression[:as_start].strip()
             alias = column_expression[as_end:].strip()
-            return {'Column': statement, 'Alias': alias}
         else:
-            print('key word Not handle')
+            alias = None
+            column = column_expression
+        return {'column_name': column, 'column_alias': alias}
 
     # Usefull
-    def deduce_column_expression(self):
-        deduce_dict = self.analyse_column_expression()
-        analysed_dict = {}
-        for select_key, select_value in deduce_dict.items():
-            analysed_dict[select_key] = []
-            for element in select_value:
-                column_expression = element[0]
-                keys_of_ce = element[1]
-                analysed_dict[select_key].append(self.define_for_column_expression(column_expression, keys_of_ce))
-        return analysed_dict
+    def deduce_column_expression_list(self, list_column_exp):
+        deduce_dict = {'columns_name': [],'columns_alias':[]}
+        for column_expression in list_column_exp:
+            ce_dict = self.deduce_column_expression(column_expression)
+            deduce_dict['columns_name'].append(ce_dict['column_name'])
+            deduce_dict['columns_alias'].append(ce_dict['column_alias'])
+        return deduce_dict
 
     # Usefull
     def is_got_subqueries(self):

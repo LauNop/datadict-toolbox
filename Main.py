@@ -61,11 +61,11 @@ def main(name):
             deduce = SQLDeduce(query)
             print(V.DASH_LINE)
 
-            kw_pos = deduce.get_kw_pos()
-            print("Nbr keyword: ", len(kw_pos))
-            print(kw_pos)
-            print(V.DASH_LINE)
-
+            # kw_pos = deduce.get_kw_pos()
+            # print("Nbr keyword: ", len(kw_pos))
+            # print(kw_pos)
+            # print(V.DASH_LINE)
+#
             # print('PARSE LIST:')
             # print(deduce.found_parse())
             # print(V.DASH_LINE)
@@ -78,12 +78,15 @@ def main(name):
             # print(kw_count)
             # print(V.DASH_LINE)
 
-            nest_keyword = deduce.nest_keyword()
-            print('Nbr:',len(nest_keyword))
-            print(nest_keyword)
-            print(V.DASH_LINE)
+            # nest_keyword = deduce.nest_keyword()
+            # print('Nbr:',len(nest_keyword))
+            # print(nest_keyword)
+            # print(V.DASH_LINE)
 
             print(deduce.build_select_tree())
+            print(V.DASH_LINE)
+
+            print(deduce.deduce_from_tree())
             print(V.DASH_LINE)
 
             # print(deduce.get_kw_query())
@@ -133,4 +136,4 @@ def main(name):
 
 
 if __name__ == "__main__":
-    main("Exp")
+    main("SQL")
