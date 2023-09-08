@@ -7,10 +7,9 @@ import re
 
 def main(name):
     if name == "Exp":
-        tab = list(range(10))
-        print(tab)
-        del tab[2:4]
-        print(tab)
+        dict_ = {0:'lol',1:'One'}
+        print(dict_[list(dict_.keys())[-1]])
+
     elif name == "Tabular":
         folder_path = V.TABULAR_FOLDER
         file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
@@ -59,18 +58,18 @@ def main(name):
             deduce = SQLDeduce(query)
             print(V.DASH_LINE)
 
-            # kw_pos = deduce.get_kw_pos()
-            # print("Nbr keyword: ", len(kw_pos))
-            # print(kw_pos)
-            # print(V.DASH_LINE)
+            kw_pos = deduce.get_kw_pos()
+            print("Nbr keyword: ", len(kw_pos))
+            print(kw_pos)
+            print(V.DASH_LINE)
 
             # print('PARSE LIST:')
             # print(deduce.found_parse())
             # print(V.DASH_LINE)
 
-            kw_parse_pos = deduce.keyword_parse_pos()
-            print("Keyword and parse sequence:",len(kw_parse_pos),'\n',kw_parse_pos)
-            print(V.DASH_LINE)
+            # kw_parse_pos = deduce.keyword_parse_pos()
+            # print("Keyword and parse sequence:",len(kw_parse_pos),'\n',kw_parse_pos)
+            # print(V.DASH_LINE)
 
             # kw_count = deduce.get_kw_count()
             # print(kw_count)
@@ -79,6 +78,9 @@ def main(name):
             nest_keyword = deduce.nest_keyword()
             print('Nbr:',len(nest_keyword))
             print(nest_keyword)
+            print(V.DASH_LINE)
+
+            print(deduce.build_select_tree())
             print(V.DASH_LINE)
 
             # print(deduce.get_kw_query())

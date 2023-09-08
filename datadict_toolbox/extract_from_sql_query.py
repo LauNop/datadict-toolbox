@@ -174,10 +174,89 @@ class SQLDeduce:
                     kw_with_nester.append(actual)
         return kw_with_nester
 
-    def select_tree(self):
-        tree = Tree()
+    def build_select_tree(self):
+        list_for_tree = self.nest_keyword()
+        node_dict = {}
+        mother_node_list = []
+        depth = 0
 
-        return
+        def add_node(node_):
+            num_key = len(node_dict)
+            node_dict[num_key] = node_
+            return
+
+        def add_table_node(index,list_for_sub_tree,element):
+            if index == len(list_for_sub_tree) - 1:
+                next_element = 'end'
+            else:
+                next_element = list_for_sub_tree[index + 1]
+                if isinstance(next_element, dict):
+                    next_element = next_element['Nester']
+            parent_key_ = mother_node_list[-1]
+            new_node = {'type': 'TABLE', 'content': [element, next_element], 'parent': parent_key_}
+            add_node(new_node)
+            return
+
+        def tree_per_list(list_for_sub_tree):
+            for i in range(len(list_for_sub_tree)):
+                element = list_for_sub_tree[i]
+                if isinstance(element,tuple):
+                    str_, span = element
+                    if re.search(r'SELECT',str_, re.IGNORECASE):
+                        if mother_node_list:
+                            parent_key = mother_node_list[-1]
+                        else:
+                            parent_key = None
+                        node = {'type': 'SelectFrom', 'content': [element], 'parent': parent_key}
+                        add_node(node)
+
+                    elif re.search(r'FROM', str_, re.IGNORECASE):
+                        node_dict_key = list(node_dict.keys())[-1]
+                        node_dict[node_dict_key]['content'].append(element)
+                        mother_node_list.append(node_dict_key)
+                        add_table_node(i,list_for_sub_tree,element)
+
+                    elif re.search(r'JOIN', str_, re.IGNORECASE):
+                        parent_key = mother_node_list[-1]
+                        node = {'type': 'JOIN', 'parent': parent_key}
+                        add_node(node)
+                        node_dict_key = list(node_dict.keys())[-1]
+                        mother_node_list.append(node_dict_key)
+                        add_table_node(i,list_for_sub_tree,element)
+
+                elif isinstance(element, dict):
+                    nester = element['Nester']
+                    str_nester, span_nester = nester
+                    if re.search(r'FROM', str_nester, re.IGNORECASE):
+                        node_dict_key = list(node_dict.keys())[-1]
+                        node_dict[node_dict_key]['content'].append(nester)
+                        mother_node_list.append(node_dict_key)
+
+                    elif re.search(r'JOIN', str_nester, re.IGNORECASE):
+                        parent_key = mother_node_list[-1]
+                        node = {'type': 'JOIN', 'parent': parent_key}
+                        add_node(node)
+                        node_dict_key = list(node_dict.keys())[-1]
+                        mother_node_list.append(node_dict_key)
+
+                    nested = element['Nested']
+                    tree_per_list(nested)
+
+            return
+
+        def parent_to_child():
+            for node_k, node_v in node_dict.items():
+                node_dict[node_k]['child'] = []
+                parent_key = node_v['parent']
+                if parent_key is not None:
+                    node_dict[parent_key]['child'].append(node_k)
+            return
+
+        tree_per_list(list_for_tree)
+        parent_to_child()
+
+        return node_dict
+
 
     # Usefull
     def between_2_keywords(self, keyword_before, keyword_after):
@@ -375,52 +454,6 @@ class Nester:
             self.dict_list.pop()
             self.append(finished_dict)
         return
-
-
-class Tree:
-    def __init__(self,list_for_tree):
-        self.list_for_tree = list_for_tree
-        self.head = None
-        self.create_tree()
-
-    def create_tree(self):
-        depth = 0
-        for element in self.list_for_tree:
-            if isinstance(element,tuple):
-                str_, span = element
-                if re.search(r'SELECT',str_,re.IGNORECASE):
-                    node = Node(0,'SF')
-                    node.set_select(element)
-                    self.head = node
-                elif re.search(r'FROM', str_, re.IGNORECASE):
-                    self.head.set_from(element)
-
-
-class Node:
-    def __init__(self, id_, type_, parent=None):
-        self.id = id_
-        self.type = type_
-        self.parent = parent
-        if self.type == 'SF' and self.parent is None:
-            self.select_ = None
-            self.from_ = None
-        elif self.type == 'J':
-            self.join_ = None
-        elif self.type == 'T':
-            self.table = None
-        else:
-            print("Problème")
-
-    def set_select(self,select):
-        self.select_ = select
-        return
-
-    def set_from(self,from_):
-        self.from_ = from_
-        return
-
-
-
 
 
 if __name__ == "__main__":
