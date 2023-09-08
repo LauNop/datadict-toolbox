@@ -281,8 +281,6 @@ class SQLDeduce:
                     sub_outputs.append(self.deduce_from_tree(key))
                 return sub_outputs
             return
-
-
         return
 
     def decrypt_table_node(self, node):
