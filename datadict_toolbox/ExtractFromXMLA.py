@@ -352,7 +352,7 @@ class ExtractorMultidimCubeCatalog(Extractor):
         is_measure = 1
         is_dimension = 0
         is_calculated = 0
-        is_visible = "wip"
+        is_visible = 1
         measure_groups = cube.find(self.balise_format("MeasureGroups")).findall(self.balise_format("MeasureGroup"))
         for measure_group in measure_groups:
             group_name = measure_group.find(self.balise_format("Name")).text
