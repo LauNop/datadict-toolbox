@@ -12,7 +12,6 @@ def main(name):
         tab.insert(0,[0,1])
         print(tab)
 
-
     elif name == "Tabular":
         folder_path = V.TABULAR_FOLDER
         file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
@@ -23,7 +22,6 @@ def main(name):
             print("Database:", etcc.src_db)
             print("Serveur:", etcc.src_serv)
             print("Cube:",etcc.cube_name())
-            print("Dictionnaire de donnée du catalogue:\n",etcc.cube_struct)
             etcc.save()
 
     elif name == "Multidim":
@@ -34,6 +32,8 @@ def main(name):
         for file_path in file_names:
             emcc = EMCC(file_path)
             print(V.DASH_LINE)
+            print(emcc.src_db)
+            print(emcc.src_serv)
             # print("Namespace:", emcc.namespace)
             # print("Database:", emcc.src_db)
             # print("Serveur:", emcc.src_serv)
@@ -136,4 +136,4 @@ def main(name):
 
 
 if __name__ == "__main__":
-    main("Tabular")
+    main("Multidim")

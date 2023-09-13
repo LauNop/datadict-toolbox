@@ -149,6 +149,7 @@ class ExtractorTabularCubeCatalog(Extractor):
     def cube_table(self, dict_table):
         table_name = dict_table['name']
         is_measure = 0
+        src_table = None
         for dict_annot in dict_table['annotations']:
             if dict_annot['name'] == "_TM_ExtProp_DbTableName":
                 src_table = dict_annot['value']
@@ -169,7 +170,7 @@ class ExtractorTabularCubeCatalog(Extractor):
                 is_calculated = 0
                 expression = ""
                 src_column = dict_column['sourceColumn']
-                src = f"{src_column}/{self.src_db}/{self.src_serv}"
+                src = f"{src_column}/{src_table}"
 
             new_values = [column_name, "", data_type, is_calculated, is_measure, expression, is_visible, table_name,
                           self.cube_name(), self.catalog_name(), src]
@@ -340,10 +341,12 @@ class ExtractorMultidimCubeCatalog(Extractor):
                         data_type = dim_dict[dimension_id]["Datatype"][i]
                         src_column = dim_dict[dimension_id]["Column"][i]
                         src_table = dim_dict[dimension_id]["Table"][i]
+                        if re.match(r"dbo_",src_table):
+                            src_table = src_table[4:]
                         new_values = [column_name, "", data_type, is_calculated, is_measure, is_dimension, expression,
                                       is_visible,
                                       group_name, self.cube_name(cube), self.catalog_name(),
-                                      f"{src_column}/{src_table}/{self.src_db}/{self.src_serv}"]
+                                      f"{src_column}/{src_table}"]
                         self.insert_structure(new_values)
         return
 
@@ -363,6 +366,8 @@ class ExtractorMultidimCubeCatalog(Extractor):
                 source = measure.find(self.balise_format("Source"))
                 sub_source = source.find(self.balise_format("Source"))
                 src_table = sub_source.find(self.balise_format("TableID")).text
+                if re.match(r"dbo_", src_table):
+                    src_table = src_table[4:]
                 if sub_source.attrib.get("{http://www.w3.org/2001/XMLSchema-instance}type") == "ColumnBinding":
                     src_column = sub_source.find(self.balise_format("ColumnID")).text
                 else:
@@ -370,7 +375,7 @@ class ExtractorMultidimCubeCatalog(Extractor):
                 new_values = [column_name, "", data_type, is_calculated, is_measure, is_dimension, expression,
                               is_visible, group_name,
                               self.cube_name(cube), self.catalog_name(),
-                              f"{src_column}/{src_table}/{self.src_db}/{self.src_serv}"]
+                              f"{src_column}/{src_table}"]
                 self.insert_structure(new_values)
         return
 
@@ -426,7 +431,8 @@ class ExtractorMultidimCubeCatalog(Extractor):
                     group_name = group_name.strip()
                     # print('group_name:', group_name)
                 else:
-                    print('OTHER PARAMETER:',parameter)
+                    pass
+                    # print('OTHER PARAMETER:',parameter)
 
             new_values = [calculate_name, '', data_type, is_calculated, is_measure, is_dimension, expression,
                           is_visible, group_name, self.cube_name(cube), self.catalog_name(), src]
@@ -439,7 +445,6 @@ class ExtractorMultidimCubeCatalog(Extractor):
             calculate_group = mdxscript.find(self.balise_format("MdxScript"))
             raw_text = calculate_group.find(self.balise_format("Commands")).find(self.balise_format("Command")).find(
                 self.balise_format("Text")).text
-            print("Raw_text:", raw_text)
             self.analyse_calculate(raw_text, cube)
         return
 
