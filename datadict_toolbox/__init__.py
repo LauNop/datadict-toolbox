@@ -1,3 +1,3 @@
 from .extract_from_sql_query import *
-from .ExtractFromDTSX import *
-from .ExtractFromXMLA import *
+from .extract_from_dtsx import *
+from .extract_from_xmla import *

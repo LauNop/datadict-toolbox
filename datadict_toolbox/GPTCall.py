@@ -119,7 +119,7 @@ def main(SQL_Query):
  
 
 if __name__ == "__main__":
-    import ExtractFromDTSX as EFD
+    import extract_from_dtsx as EFD
 
     folder_path = V.DTSX_FOLDER
     file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
