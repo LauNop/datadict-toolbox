@@ -1,8 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
-
 import xml.etree.ElementTree as ET
 import os
 import json
+import re
 
 DASH_LINE = os.getenv("DASH_LINE")
 
@@ -16,7 +16,6 @@ def extract_erp_query(file_path_list,print_files=0):
     print("File list:")
     for file_path in file_path_list:
         root, namespace = dtsx_open(file_path)
-        new_values = []
 
         if print_files : print(root.attrib.get("{}ObjectName".format(namespace)))
         executables = root.findall(".//{}Executables".format(namespace))[0]
@@ -38,8 +37,7 @@ def extract_erp_query(file_path_list,print_files=0):
         for property_ in properties.findall("property"):
             if(property_.attrib.get("name") == "OpenRowset"):
                 tab_db_dest = property_.text
-                tab_db_dest = tab_db_dest[len("[dbo]."):]
-                tab_db_dest = tab_db_dest[1:-1]
+                tab_db_dest = re.search('(\[dbo\]\.)?\[(.*?)\]',tab_db_dest).group(2)
 
         # Rechercher toutes les variables de transformation dans le package
         for variables in root.findall(".//{}Variable".format(namespace)):

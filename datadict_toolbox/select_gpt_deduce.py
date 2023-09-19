@@ -13,8 +13,8 @@ model_name = "gpt-4"
 
 
 class SelectGPTDeduce:
-    def __init__(self, openai_organization, openai_api_key, sql_query = None, model_name="gpt-4",
-                 response_file_name="model_response", answer_file = None):
+    def __init__(self, openai_organization, openai_api_key, sql_query=None, model_name="gpt-4",
+                 response_file_name="model_response", answer_file=None):
         self.openai_organization = openai_organization
         self.openai_api_key = openai_api_key
         self.sql_query = sql_query
@@ -22,14 +22,12 @@ class SelectGPTDeduce:
         self.response_file_name = response_file_name
 
         self.prompts_lines = self.load_prompts()
-        print(self.prompts_lines)
-        print(len(self.prompts_lines))
-        # if answer_file is None:
-        #     self.model_response = self.get_model_response()
-        # else:
-        #     with open(answer_file,'r') as file:
-        #         self.model_response = file.read()
-        #         file.close()
+        if answer_file is None:
+            self.model_response = self.get_model_response()
+        else:
+            with open(answer_file,'r') as file:
+                self.model_response = file.read()
+                file.close()
 
     def load_prompts(self):
         with open('datadict_toolbox/prompt_components.txt', 'r') as file:
@@ -47,7 +45,6 @@ class SelectGPTDeduce:
             count += 1
             example_prompt += "Example " + str(count) + ":\nSQL Query:\n"
             example_prompt += self.prompts_lines[i]
-            print(self.prompts_lines[i])
             example_prompt += "\nOutput:\n"
             example_prompt += self.prompts_lines[i+1]
             example_prompt += '\n\n'

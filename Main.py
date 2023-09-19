@@ -139,7 +139,7 @@ def main(name):
         queries_dict = extract_erp_query(file_names)
 
         length = len(queries_dict["SQL_QUERY"])
-        length = 1
+        # length = 1
         count = 0
         for i in range(length):
             count += 1
@@ -149,20 +149,19 @@ def main(name):
             print(deduce.sql_query)
             print(V.DASH_LINE)
 
-            print("System:\n", deduce.system_message())
-            print(V.DASH_LINE)
-
-            print("Examples:\n", deduce.examples_message())
-            print(V.DASH_LINE)
-
-            # print(deduce.model_response)
-            # print(V.DASH_LINE)
-#
-            # deduce.save_model_response()
+            # print("System:\n", deduce.system_message())
             # print(V.DASH_LINE)
 
+            # print("Examples:\n", deduce.examples_message())
+            # print(V.DASH_LINE)
+
+            print(deduce.model_response)
             print(V.DASH_LINE)
-        print(queries_dict["DEST_TABLE"])
+
+            deduce.save_model_response()
+            print(V.DASH_LINE)
+
+            print(V.DASH_LINE)
     elif name == "Response":
         folder_path = "model_responses/"
         file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
