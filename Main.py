@@ -3,6 +3,7 @@ from env import envVar as V
 from datadict_toolbox import SQLDeduce
 from datadict_toolbox import extract_erp_query
 from datadict_toolbox import ExtractorMultidimCubeCatalog as EMCC, ExtractorTabularCubeCatalog as ETCC
+from datadict_toolbox import SelectGPTDeduce, extract_erp_query
 import re
 
 def main(name):
@@ -130,10 +131,34 @@ def main(name):
             print(V.DASH_LINE)
             count += 1
 
+    elif name == "GPT":
+        folder_path = V.DTSX_FOLDER
+        file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
+                      os.path.isfile(os.path.join(folder_path, f))]
+
+        queries = extract_erp_query(file_names)["SQL_QUERY"]
+        # main(queries)
+        count = 0
+        for query in queries[:10]:
+            count += 1
+            print(count, ":", file_names[count - 1])
+            deduce = SelectGPTDeduce(V.OPENAI_ORG_ID, V.OPENAI_API_KEY, query)
+
+            print(deduce.sql_query)
+            print(V.DASH_LINE)
+
+            # print("Examples:\n", deduce.examples_message())
+            # print(V.DASH_LINE)
+
+            print(deduce.get_model_response())
+            print(V.DASH_LINE)
+
+            print(V.DASH_LINE)
+
     else:
         print("No case fit : Wrong number")
     return
 
 
 if __name__ == "__main__":
-    main("Multidim")
+    main("GPT")
