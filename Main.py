@@ -137,8 +137,9 @@ def main(name):
                       os.path.isfile(os.path.join(folder_path, f))]
 
         queries_dict = extract_erp_query(file_names)
+
         length = len(queries_dict["SQL_QUERY"])
-        # length = 3
+        length = 1
         count = 0
         for i in range(length):
             count += 1
@@ -148,17 +149,30 @@ def main(name):
             print(deduce.sql_query)
             print(V.DASH_LINE)
 
-            # print("Examples:\n", deduce.examples_message())
+            print("System:\n", deduce.system_message())
+            print(V.DASH_LINE)
+
+            print("Examples:\n", deduce.examples_message())
+            print(V.DASH_LINE)
+
+            # print(deduce.model_response)
+            # print(V.DASH_LINE)
+#
+            # deduce.save_model_response()
             # print(V.DASH_LINE)
 
-            print(deduce.model_response)
             print(V.DASH_LINE)
+        print(queries_dict["DEST_TABLE"])
+    elif name == "Response":
+        folder_path = "model_responses/"
+        file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
+                      os.path.isfile(os.path.join(folder_path, f))]
 
-            print(deduce.save_model_response())
-            print(V.DASH_LINE)
-
-            print(V.DASH_LINE)
-
+        for file in file_names[1:2]:
+            print("File:", file)
+            print()
+            deduce = SelectGPTDeduce(V.OPENAI_ORG_ID, V.OPENAI_API_KEY, answer_file=file)
+            deduce.extract_data_from_model_response()
     else:
         print("No case fit : Wrong number")
     return

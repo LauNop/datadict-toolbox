@@ -2,7 +2,8 @@
 import pandas as pd
 import json
 import os
-import time
+import re
+import ast
 
 import env.envVar as V
 
@@ -12,38 +13,44 @@ model_name = "gpt-4"
 
 
 class SelectGPTDeduce:
-    def __init__(self, openai_organization, openai_api_key, sql_query, model_name="gpt-4",
-                 response_file_name="model_response"):
+    def __init__(self, openai_organization, openai_api_key, sql_query = None, model_name="gpt-4",
+                 response_file_name="model_response", answer_file = None):
         self.openai_organization = openai_organization
         self.openai_api_key = openai_api_key
         self.sql_query = sql_query
         self.model_name = model_name
         self.response_file_name = response_file_name
 
-        self.prompts_dict = self.load_prompts()
-        self.model_response = self.get_model_response()
+        self.prompts_lines = self.load_prompts()
+        print(self.prompts_lines)
+        print(len(self.prompts_lines))
+        # if answer_file is None:
+        #     self.model_response = self.get_model_response()
+        # else:
+        #     with open(answer_file,'r') as file:
+        #         self.model_response = file.read()
+        #         file.close()
 
     def load_prompts(self):
-        with open('datadict_toolbox/usefull.json', 'r') as file:
-            json_content = file.read()
-            usefull_dict = json.loads(json_content)
+        with open('datadict_toolbox/prompt_components.txt', 'r') as file:
+             lines = file.readlines()
         file.close()
-        return usefull_dict['Prompts']
+        return lines
 
     def system_message(self):
-        return self.prompts_dict['System']
+        return self.prompts_lines[1]
 
     def examples_message(self):
         example_prompt = ""
-        examples = self.prompts_dict['Examples']
-        solutions = self.prompts_dict['Solutions']
-        length = len(examples)
-        for i in range(length):
-            example_prompt += "Example " + str(i) + ":\nSQL Query:\n"
-            example_prompt += examples[i]
-            example_prompt += "\n\nOutput:\n"
-            example_prompt += solutions[i]
-            example_prompt += '\n\n\n'
+        count = 0
+        for i in range(4, len(self.prompts_lines), 2):
+            count += 1
+            example_prompt += "Example " + str(count) + ":\nSQL Query:\n"
+            example_prompt += self.prompts_lines[i]
+            print(self.prompts_lines[i])
+            example_prompt += "\nOutput:\n"
+            example_prompt += self.prompts_lines[i+1]
+            example_prompt += '\n\n'
         return example_prompt
 
     def prompt(self):
@@ -69,11 +76,11 @@ class SelectGPTDeduce:
 
     def extract_data_from_model_response(self):
         string = self.model_response
-        list_to_format = string[string.index('['):]
+        list_to_format = re.search(r'\[.*?\]$',string,).group()
+        print(type(list_to_format),list_to_format)
         list_to_format = list_to_format.replace("\n", "").strip()
-        list_to_format = json.loads(list_to_format)
-        print(type(list_to_format))
-
+        computable_list = json.loads('{"Section":' + list_to_format + '}')
+        print(computable_list)
         return
 
     def save_model_response(self):
