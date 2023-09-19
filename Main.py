@@ -51,15 +51,15 @@ def main(name):
         print("Nbr fichier:", len(file_names))
         print(V.DASH_LINE)
 
-        queries = extract_erp_query(file_names)["SQL_QUERY"]
+        queries_dict = extract_erp_query(file_names)["SQL_QUERY"]
 
         count = 1
-        for query in queries[3:4]:
+        for element in queries_dict[3:4]:
             print(count)
-            print('SQL QUERY:\n', query)
+            print('SQL QUERY:\n', element)
             print(V.DASH_LINE)
 
-            deduce = SQLDeduce(query)
+            deduce = SQLDeduce(element)
             print(V.DASH_LINE)
 
             # kw_pos = deduce.get_kw_pos()
@@ -136,13 +136,14 @@ def main(name):
         file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
                       os.path.isfile(os.path.join(folder_path, f))]
 
-        queries = extract_erp_query(file_names)["SQL_QUERY"]
-        # main(queries)
+        queries_dict = extract_erp_query(file_names)
+        length = len(queries_dict["SQL_QUERY"])
+        # length = 3
         count = 0
-        for query in queries[:10]:
+        for i in range(length):
             count += 1
             print(count, ":", file_names[count - 1])
-            deduce = SelectGPTDeduce(V.OPENAI_ORG_ID, V.OPENAI_API_KEY, query)
+            deduce = SelectGPTDeduce(V.OPENAI_ORG_ID, V.OPENAI_API_KEY, queries_dict["SQL_QUERY"][i], response_file_name=queries_dict["DEST_TABLE"][i])
 
             print(deduce.sql_query)
             print(V.DASH_LINE)
@@ -150,7 +151,10 @@ def main(name):
             # print("Examples:\n", deduce.examples_message())
             # print(V.DASH_LINE)
 
-            print(deduce.get_model_response())
+            print(deduce.model_response)
+            print(V.DASH_LINE)
+
+            print(deduce.save_model_response())
             print(V.DASH_LINE)
 
             print(V.DASH_LINE)

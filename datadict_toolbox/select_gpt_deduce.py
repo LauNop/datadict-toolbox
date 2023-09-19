@@ -12,12 +12,16 @@ model_name = "gpt-4"
 
 
 class SelectGPTDeduce:
-    def __init__(self, openai_organization, openai_api_key, sql_query, model_name="gpt-4"):
+    def __init__(self, openai_organization, openai_api_key, sql_query, model_name="gpt-4",
+                 response_file_name="model_response"):
         self.openai_organization = openai_organization
         self.openai_api_key = openai_api_key
         self.sql_query = sql_query
         self.model_name = model_name
+        self.response_file_name = response_file_name
+
         self.prompts_dict = self.load_prompts()
+        self.model_response = self.get_model_response()
 
     def load_prompts(self):
         with open('datadict_toolbox/usefull.json', 'r') as file:
@@ -63,28 +67,23 @@ class SelectGPTDeduce:
         print("Nbr TOKENS:\n", response["usage"])
         return response.choices[0].message["content"]
 
-    def extract_data_from_model_response(self, model_response):
-        print("MODEL RESPONSE :\n", model_response)
-        print(V.DASH_LINE)
-        column = model_response[model_response.index('['):model_response.index('Dictionary')]
-        print(type(column), column)
-        print(V.DASH_LINE)
-        column = column.replace("\n", "")
-        print("\nAfter strip:\n", column)
-        column = json.loads(column)
-        print(type(column), column)
-        col_nbr = len(column)
-        print("Nbr_column : ", col_nbr)
-        print(V.DASH_LINE)
-        model_response = model_response[model_response.index('{'):model_response.index('}') + 1]
-        print("Model dict :\n", model_response)
-        data = json.loads(model_response)
-        if len(data["COLUMN_NAME_ERP"]) != col_nbr: data['COLUMN_NAME_ERP'] = data['COLUMN_NAME_ERP'][:col_nbr]
-        if len(data["MAPPING"]) != col_nbr: data['MAPPING'] = data['MAPPING'][:col_nbr]
-        data["TABLE_NAME_ERP"] = [data["TABLE_NAME_ERP"] for i in range(col_nbr)]
-        data["DATABASE_NAME_ERP"] = [data["DATABASE_NAME_ERP"] for i in range(col_nbr)]
-        print("TABLE TO SAVE:\n", data)
-        return data, col_nbr
+    def extract_data_from_model_response(self):
+        string = self.model_response
+        list_to_format = string[string.index('['):]
+        list_to_format = list_to_format.replace("\n", "").strip()
+        list_to_format = json.loads(list_to_format)
+        print(type(list_to_format))
+
+        return
+
+    def save_model_response(self):
+        dossier = "model_responses/"
+        if not (os.path.exists(dossier) and os.path.isdir(dossier)):
+            os.makedirs(dossier)
+        with open(dossier + self.response_file_name + '.txt', 'w') as file:
+            file.write(self.model_response)
+            file.close()
+        return
 
     def save(self, path=None):
         dossier = "excel_result/"
