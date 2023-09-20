@@ -18,3 +18,9 @@ Pour le multidimensionnelle le fichier xmla sera sous forme de balise xml. Lors 
 <?xml version="1.0" ?>
 ````
 Vous devez l'implémenter sinon le module xml.etree.ElementTree dans extract_from_xmla.ExtractorMultidimCubeCatalog ne pourra pas lire le fichier xmla.
+
+***
+
+#### NB:
+
+La lecture des documents dépends de la façon dont ils sont générées par MS SQL SERVER.

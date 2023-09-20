@@ -1,9 +1,8 @@
 import os
 from env import envVar as V
 from datadict_toolbox import SQLDeduce
-from datadict_toolbox import extract_erp_query
 from datadict_toolbox import ExtractorMultidimCubeCatalog as EMCC, ExtractorTabularCubeCatalog as ETCC
-from datadict_toolbox import SelectGPTDeduce, extract_erp_query
+from datadict_toolbox import SelectGPTDeduce, extract_erp_query, extract_ssis_mapping
 import re
 
 def main(name):
@@ -15,10 +14,10 @@ def main(name):
 
     elif name == "Tabular":
         folder_path = V.TABULAR_FOLDER
-        file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
+        files_path = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
                       os.path.isfile(os.path.join(folder_path, f))]
-        print("Nbr fichier: ", len(file_names))
-        for file_path in file_names:
+        print("Nbr fichier: ", len(files_path))
+        for file_path in files_path:
             etcc = ETCC(file_path)
             print("Database:", etcc.src_db)
             print("Serveur:", etcc.src_serv)
@@ -27,10 +26,10 @@ def main(name):
 
     elif name == "Multidim":
         folder_path = V.MULTIDIM_FOLDER
-        file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
+        files_path = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
                       os.path.isfile(os.path.join(folder_path, f))]
-        print("Nbr fichier: ", len(file_names))
-        for file_path in file_names:
+        print("Nbr fichier: ", len(files_path))
+        for file_path in files_path:
             emcc = EMCC(file_path)
             print(V.DASH_LINE)
             print(emcc.src_db)
@@ -46,12 +45,12 @@ def main(name):
     elif name == "SQL":
         folder_path = V.DTSX_FOLDER
         print(folder_path)
-        file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
+        files_path = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
                       os.path.isfile(os.path.join(folder_path, f))]
-        print("Nbr fichier:", len(file_names))
+        print("Nbr fichier:", len(files_path))
         print(V.DASH_LINE)
 
-        queries_dict = extract_erp_query(file_names)["SQL_QUERY"]
+        queries_dict = extract_erp_query(files_path)["SQL_QUERY"]
 
         count = 1
         for element in queries_dict[3:4]:
@@ -133,18 +132,20 @@ def main(name):
 
     elif name == "GPT":
         folder_path = V.DTSX_FOLDER
-        file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
+        files_path = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
                       os.path.isfile(os.path.join(folder_path, f))]
 
-        queries_dict = extract_erp_query(file_names)
+        queries_dict = extract_erp_query(files_path)
+        # print(queries_dict["DEST_TABLE"][43])
 
         length = len(queries_dict["SQL_QUERY"])
-        # length = 1
-        count = 0
+        # length = 40
+
         for i in range(length):
-            count += 1
-            print(count, ":", file_names[count - 1])
-            deduce = SelectGPTDeduce(V.OPENAI_ORG_ID, V.OPENAI_API_KEY, queries_dict["SQL_QUERY"][i], response_file_name=queries_dict["DEST_TABLE"][i])
+            print(i, ":", files_path[i])
+            deduce = SelectGPTDeduce(V.OPENAI_ORG_ID, V.OPENAI_API_KEY, queries_dict["SQL_QUERY"][i],
+                                     response_file_name=queries_dict["DEST_TABLE"][i],
+                                     destination_table=queries_dict["DEST_TABLE"][i])
 
             print(deduce.sql_query)
             print(V.DASH_LINE)
@@ -159,19 +160,39 @@ def main(name):
             print(V.DASH_LINE)
 
             deduce.save_model_response()
-            print(V.DASH_LINE)
+
+            deduce.extract_data_from_model_response()
+
+            deduce.save()
 
             print(V.DASH_LINE)
+
+
     elif name == "Response":
         folder_path = "model_responses/"
-        file_names = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
+        files_path = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
                       os.path.isfile(os.path.join(folder_path, f))]
 
-        for file in file_names[1:2]:
-            print("File:", file)
-            print()
-            deduce = SelectGPTDeduce(V.OPENAI_ORG_ID, V.OPENAI_API_KEY, answer_file=file)
+        for file_path in [files_path[-1]]:
+            print("File path:", file_path)
+
+            last_border = len(file_path) - len('.txt')
+            first_border = len(folder_path)
+            table_name = file_path
+            table_name = table_name[first_border:last_border]
+
+            deduce = SelectGPTDeduce(V.OPENAI_ORG_ID, V.OPENAI_API_KEY, answer_file=file_path,
+                                     destination_table=table_name)
             deduce.extract_data_from_model_response()
+            deduce.save()
+
+    elif name == "DTSX_TEST":
+        folder_path = V.DTSX_FOLDER
+        files_path = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
+                      os.path.isfile(os.path.join(folder_path, f))]
+
+        for file_path in files_path[:1]:
+            print(extract_ssis_mapping(file_path))
     else:
         print("No case fit : Wrong number")
     return

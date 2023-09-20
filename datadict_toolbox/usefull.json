@@ -60,5 +60,11 @@
     "CUBE_NAME",
     "CATALOG_NAME",
     "SOURCE"
+  ],
+  "Select_Dict": [
+    "ALIAS_NAME",
+    "COLUMN_NAME_OR_EXPRESSION",
+    "TABLE_NAME",
+    "TABLE_DESTINATION"
   ]
 }
