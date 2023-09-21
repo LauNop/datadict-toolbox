@@ -19,7 +19,7 @@ setup(
     packages=find_packages(),
     install_requires=["openai", "pandas", "openpyxl", ],
     keywords=['python', 'data', 'dictionary', 'governance', 'SQL'],
-    license="",
+    license="MIT",
     classifiers=[
         "Development Status :: Realease package ",
         "Intended Audience :: Developpers",
