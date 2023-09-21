@@ -6,3 +6,5 @@ env/
 excel_result/
 __pycache__/
 model_responses/
+build/
+dist/

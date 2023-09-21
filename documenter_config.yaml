@@ -1,0 +1,19 @@
+codebase_path: "."
+output_docs_folder_name: "docs"
+ignore_folders:
+  - "venv"
+  - "temp"
+  - ".git"
+  - "tests"
+  - "excel_result"
+  - "model_responses"
+is_ignore_gitignore: True
+file_types:
+  - ".py"
+unwanted_files:
+  - "setup.py"
+  - "__init__.py"
+skip_existing: False
+gpt_model: "gpt-4"
+language: "fr"
+    
