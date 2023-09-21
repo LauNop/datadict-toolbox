@@ -8,15 +8,15 @@ with open("README.md", "r") as f:
 
 # Setting up
 setup(
-    name="datadict_toolbox",
+    name="datadict-toolbox",
     version=VERSION,
+    packages=["datadict_toolbox"],
     author="Laurent NOPOLY",
     author_email="laurentnopoly@gmail.com",
     description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     url="https://github.com/LauNop/datadict_toolbox",
-    packages=find_packages(),
     install_requires=["openai", "pandas", "openpyxl", ],
     keywords=['python', 'data', 'dictionary', 'governance', 'SQL'],
     license="MIT",
