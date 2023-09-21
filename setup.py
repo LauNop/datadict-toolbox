@@ -21,8 +21,8 @@ setup(
     keywords=['python', 'data', 'dictionary', 'governance', 'SQL'],
     license="MIT",
     classifiers=[
-        "Development Status :: Realease package ",
-        "Intended Audience :: Developpers",
+        "Development Status :: 3 - Alpha ",
+        "Intended Audience :: Developers",
         "Programming Language :: Python :: 3",
         "Operating System :: Microsoft :: Windows"
     ]
