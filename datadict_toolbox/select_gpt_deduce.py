@@ -8,8 +8,8 @@ import re
 class SelectGPTDeduce:
     def __init__(self, openai_organization, openai_api_key, sql_query=None, model_name="gpt-4",
                  response_file_name="model_response", answer_file=None, excel_name = "data_dict", destination_table = None):
-        self.openai_organization = openai_organization
-        self.openai_api_key = openai_api_key
+        openai.api_key = openai_api_key
+        openai.organization = openai_organization
         self.sql_query = sql_query
         self.model_name = model_name
         self.response_file_name = response_file_name
