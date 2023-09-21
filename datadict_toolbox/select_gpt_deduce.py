@@ -23,7 +23,7 @@ class SelectGPTDeduce:
             with open(answer_file,'r') as file:
                 self.model_response = file.read()
                 file.close()
-        # self.extract_data_from_model_response()
+        self.extract_data_from_model_response()
 
     def load_prompts(self):
         with open('datadict_toolbox/prompt_components.txt', 'r') as file:
@@ -82,10 +82,25 @@ class SelectGPTDeduce:
 
     def extract_data_from_model_response(self):
         string = self.model_response
-        list_to_format = re.search(r'\[.*?\]$',string,re.DOTALL).group()
-        print(type(list_to_format),list_to_format)
-        list_to_format = list_to_format.replace("\n", "").strip()
-        computable_list = json.loads(list_to_format)
+        computable_list = []
+        try:
+            list_to_format = re.search(r'\[.*?\]$',string,re.DOTALL).group()
+            print(type(list_to_format), list_to_format)
+            list_to_format = list_to_format.replace("\n", "").strip()
+            computable_list = json.loads(list_to_format)
+        except AttributeError:
+            print(
+                "No match found in the string.",
+                "Python library:re fail to match the list of dictionnary in model response",
+                  )
+            self.save_model_response(True)
+            print("Model response saved for inspection")
+            return
+        except json.JSONDecodeError as e:
+            print("Error decoding JSON:", e)
+            self.save_model_response(True)
+            print("Model response saved for inspection")
+            return
         for dict_ in computable_list:
             alias = dict_['alias']
             column = dict_['column']
@@ -94,8 +109,11 @@ class SelectGPTDeduce:
             self.insert_structure(new_values)
         return computable_list
 
-    def save_model_response(self):
-        dossier = "model_responses/"
+    def save_model_response(self,save_for_error=False):
+        if save_for_error:
+            dossier="model_responses/error/"
+        else:
+            dossier = "model_responses/"
         if not (os.path.exists(dossier) and os.path.isdir(dossier)):
             os.makedirs(dossier)
         with open(dossier + self.response_file_name + '.txt', 'w') as file:
@@ -103,24 +121,31 @@ class SelectGPTDeduce:
             file.close()
         return
 
+    def check_data_dict_status(self):
+        num_element = len(self.select_data_dict['ALIAS_NAME'])
+        print(f"There is {str(num_element)} element in data dict ")
+        return num_element
+
     def save(self):
-        dossier = "excel_result/"
-        if not (os.path.exists(dossier) and os.path.isdir(dossier)):
-            os.makedirs(dossier)
+        if self.check_data_dict_status():
+            dossier = "excel_result/"
+            if not (os.path.exists(dossier) and os.path.isdir(dossier)):
+                os.makedirs(dossier)
 
-        file_name = self.excel_name + ".xlsx"
-        file_path = dossier + file_name
+            file_name = self.excel_name + ".xlsx"
+            file_path = dossier + file_name
 
-        if os.path.exists(file_path):
-            new_df = pd.DataFrame(self.select_data_dict)
-            existing_df = pd.read_excel(file_path)
-            combined_df = pd.concat([existing_df, new_df], ignore_index=True)
-            combined_df.to_excel(file_path, index=False)
+            if os.path.exists(file_path):
+                new_df = pd.DataFrame(self.select_data_dict)
+                existing_df = pd.read_excel(file_path)
+                combined_df = pd.concat([existing_df, new_df], ignore_index=True)
+                combined_df.to_excel(file_path, index=False)
+            else:
+                df = pd.DataFrame(self.select_data_dict)
+                df.to_excel(file_path, index=False)
         else:
-            df = pd.DataFrame(self.select_data_dict)
-            df.to_excel(file_path, index=False)
+            print("Nothing to save. Extraction may have fail")
         return
-
 
 
 if __name__ == "__main__":

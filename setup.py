@@ -17,7 +17,7 @@ setup(
     long_description_content_type="text/markdown",
     url="",
     packages = find_packages(),
-    install_requires = [],
+    install_requires = ["openai","pandas","openpyxl",],
     keywords = ['python','data','dictionary','governance'],
     license="",
     classifiers = [

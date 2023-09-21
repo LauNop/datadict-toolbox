@@ -161,8 +161,6 @@ def main(name):
 
             deduce.save_model_response()
 
-            deduce.extract_data_from_model_response()
-
             deduce.save()
 
             print(V.DASH_LINE)
