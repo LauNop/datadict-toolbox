@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.5'
+VERSION = '0.5.1'
 DESCRIPTION = 'A package to build a data dictionary from xml MS SQL SERVER file and select SQL query'
 with open("README.md", "r") as f:
     LONG_DESCRIPTION = f.read()
@@ -16,7 +16,7 @@ setup(
     description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
-    url="https://github.com/LauNop/datadict_toolbox",
+    url="https://github.com/LauNop/datadict-toolbox",
     install_requires=["openai", "pandas", "openpyxl", ],
     keywords=['python', 'data', 'dictionary', 'governance', 'SQL'],
     license="MIT",
