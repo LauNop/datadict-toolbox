@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.5.1'
+VERSION = '0.5.2'
 DESCRIPTION = 'A package to build a data dictionary from xml MS SQL SERVER file and select SQL query'
 with open("README.md", "r") as f:
     LONG_DESCRIPTION = f.read()

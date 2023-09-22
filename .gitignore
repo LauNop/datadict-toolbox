@@ -8,3 +8,4 @@ model_responses/
 build/
 dist/
 datadict_toolbox.egg-info/
+documenter_config.yaml
