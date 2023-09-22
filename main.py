@@ -141,7 +141,7 @@ def main(name):
         # print(queries_dict["DEST_TABLE"][43])
 
         length = len(queries_dict["SQL_QUERY"])
-        # length = 40
+        length = 1
 
         for i in range(length):
             print(i, ":", files_path[i])
@@ -199,5 +199,5 @@ def main(name):
 
 
 if __name__ == "__main__":
-    main("Tabular")
-    main("Multidim")
+    main("GPT")
+    # main("Multidim")

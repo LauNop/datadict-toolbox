@@ -5,6 +5,7 @@ import os
 import re
 from abc import ABC, abstractmethod
 
+from datadict_toolbox.usefull import usefull_dict
 
 class Extractor(ABC):
     def __init__(self, file_path):
@@ -12,8 +13,9 @@ class Extractor(ABC):
         self.file_path = file_path
 
     @abstractmethod
-    def build_cube_dict(self):
-        pass
+    def build_cube_dict(self,key):
+        cube_struct = {key: [] for key in usefull_dict[key]}
+        return cube_struct
 
     @abstractmethod
     def open_file(self):
@@ -101,12 +103,7 @@ class ExtractorTabularCubeCatalog(Extractor):
         self.create_cube_struct()
 
     def build_cube_dict(self):
-        with open('datadict_toolbox/usefull.json', 'r') as file:
-            json_content = file.read()
-            usefull_dict = json.loads(json_content)
-        file.close()
-        cube_struct = {key: [] for key in usefull_dict["Tabular"]}
-        return cube_struct
+        return super().build_cube_dict("Tabular")
 
     def setup(self):
         pass
@@ -220,12 +217,7 @@ class ExtractorMultidimCubeCatalog(Extractor):
         self.create_cube_struct()
 
     def build_cube_dict(self):
-        with open('datadict_toolbox/usefull.json', 'r') as file:
-            json_content = file.read()
-            usefull_dict = json.loads(json_content)
-        file.close()
-        cube_struct = {key: [] for key in usefull_dict["Multidim"]}
-        return cube_struct
+        return super().build_cube_dict("Multidim")
 
     def open_file(self):
         # Ouverture du fichier .xmla et récupération des données dans data

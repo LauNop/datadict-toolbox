@@ -4,6 +4,7 @@ import json
 import os
 import re
 
+from datadict_toolbox.usefull import usefull_dict
 
 class SelectGPTDeduce:
     def __init__(self, openai_organization, openai_api_key, sql_query=None, model_name="gpt-4",
@@ -68,10 +69,6 @@ class SelectGPTDeduce:
         return response.choices[0].message["content"]
 
     def build_data_dict(self):
-        with open('datadict_toolbox/usefull.json', 'r') as file:
-            json_content = file.read()
-            usefull_dict = json.loads(json_content)
-        file.close()
         select_data_dict = {key: [] for key in usefull_dict["Select_Dict"]}
         return select_data_dict
 
