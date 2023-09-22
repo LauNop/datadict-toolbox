@@ -17,7 +17,6 @@ class SelectGPTDeduce:
         self.excel_name = excel_name
         self.select_data_dict = self.build_data_dict()
         self.destination_table = destination_table
-        self.prompts_lines = self.load_prompts()
         if answer_file is None:
             self.model_response = self.get_model_response()
         else:
@@ -26,24 +25,19 @@ class SelectGPTDeduce:
                 file.close()
         self.extract_data_from_model_response()
 
-    def load_prompts(self):
-        with open('datadict_toolbox/prompt_components.txt', 'r') as file:
-             lines = file.readlines()
-        file.close()
-        return lines
-
     def system_message(self):
-        return self.prompts_lines[1]
+        return usefull_dict["System_message"]
 
     def examples_message(self):
         example_prompt = ""
         count = 0
-        for i in range(4, len(self.prompts_lines), 2):
+        prompts_dict = usefull_dict["Example_prompts"]
+        for i in range(len(prompts_dict["query"])):
             count += 1
             example_prompt += "Example " + str(count) + ":\nSQL Query:\n"
-            example_prompt += self.prompts_lines[i]
+            example_prompt += prompts_dict["query"][i]
             example_prompt += "\nOutput:\n"
-            example_prompt += self.prompts_lines[i+1]
+            example_prompt += prompts_dict["solutions"][i]
             example_prompt += '\n\n'
         return example_prompt
 
