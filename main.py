@@ -17,19 +17,20 @@ def main(name):
         files_path = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
                       os.path.isfile(os.path.join(folder_path, f))]
         print("Nbr fichier: ", len(files_path))
-        for file_path in files_path:
+        for file_path in files_path[:1]:
             etcc = ETCC(file_path)
             print("Database:", etcc.src_db)
             print("Serveur:", etcc.src_serv)
-            print("Cube:",etcc.cube_name())
+            print("Cube:", etcc.cube_name())
             etcc.save()
+            etcc.save(V.EXCEL_REPO, 'tabular_save_test.xlsx')
 
     elif name == "Multidim":
         folder_path = V.MULTIDIM_FOLDER
         files_path = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if
                       os.path.isfile(os.path.join(folder_path, f))]
         print("Nbr fichier: ", len(files_path))
-        for file_path in files_path:
+        for file_path in files_path[:1]:
             emcc = EMCC(file_path)
             print(V.DASH_LINE)
             print(emcc.src_db)
@@ -41,6 +42,7 @@ def main(name):
             # print("Cubes du catalogue:", emcc.cubes_name())
             # print("Dictionnaire de donnée du catalogue:\n",emcc.cube_struct)
             emcc.save()
+            emcc.save(V.EXCEL_REPO,'multidim_save_test.xlsx')
 
     elif name == "SQL":
         folder_path = V.DTSX_FOLDER
@@ -197,4 +199,5 @@ def main(name):
 
 
 if __name__ == "__main__":
-    main("GPT")
+    main("Tabular")
+    main("Multidim")

@@ -57,30 +57,32 @@ class Extractor(ABC):
         pass
 
     @abstractmethod
-    def build_save_path(self):
+    def build_save_filename(self):
         pass
 
     @abstractmethod
-    def save(self, path=None):
-        dossier = "excel_result/"
-        if not (os.path.exists(dossier) and os.path.isdir(dossier)):
-            os.makedirs(dossier)
+    def save(self, save_path=None, filename=None):
+        save_folder = "excel_result/"
+        if save_path is None:
+            save_path = "excel_result/"
 
-        if path is None:
-            path_build = self.build_save_path()
-            path = "_".join(path_build) + ".xlsx"
-            path = dossier + path
-        else:
-            path = dossier + path
+        if not (os.path.exists(save_path) and os.path.isdir(save_path)):
+            os.makedirs(save_path)
 
-        if os.path.exists(path):
+        if filename is None:
+            filename_build = self.build_save_filename()
+            filename = "_".join(filename_build) + ".xlsx"
+
+        save_path = os.path.join(save_path, filename)
+
+        if os.path.exists(save_path):
             new_df = pd.DataFrame(self.cube_struct)
-            existing_df = pd.read_excel(path)
+            existing_df = pd.read_excel(save_path)
             combined_df = pd.concat([existing_df, new_df], ignore_index=True)
-            combined_df.to_excel(path, index=False)
+            combined_df.to_excel(save_path, index=False)
         else:
             df = pd.DataFrame(self.cube_struct)
-            df.to_excel(path, index=False)
+            df.to_excel(save_path, index=False)
         return
 
     @abstractmethod
@@ -199,14 +201,12 @@ class ExtractorTabularCubeCatalog(Extractor):
             self.cube_table(dict_table)
             self.cube_measures(dict_table)
 
-    def build_save_path(self):
+    def build_save_filename(self):
         return [self.catalog_name(), "tabular", self.cube_name()]
 
-    def save(self, path=None):
-        if path is None:
-            return super().save()
-        else:
-            return super().save(path)
+    def save(self, save_path=None,filename=None):
+        super().save(save_path,filename)
+        return
 
 
 class ExtractorMultidimCubeCatalog(Extractor):
@@ -454,14 +454,12 @@ class ExtractorMultidimCubeCatalog(Extractor):
             self.cube_measures(cube)
             self.cube_calculate(cube)
 
-    def build_save_path(self):
+    def build_save_filename(self):
         return [self.catalog_name(), "mutldidim", str(len(self.cubes()))]
 
-    def save(self, path=None):
-        if path is None:
-            return super().save()
-        else:
-            return super().save(path)
+    def save(self, save_path=None, filename=None):
+        super().save(save_path, filename)
+        return
 
 
 if __name__ == "__main__":
