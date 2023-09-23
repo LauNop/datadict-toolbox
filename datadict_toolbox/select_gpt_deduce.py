@@ -8,7 +8,7 @@ from datadict_toolbox.usefull import usefull_dict
 
 class SelectGPTDeduce:
     def __init__(self, openai_organization, openai_api_key, sql_query=None, model_name="gpt-4",
-                 response_file_name="model_response", answer_file=None, excel_name = "data_dict", destination_table = None):
+                 response_file_name="model_response", answer_file=None, excel_name="data_dict", destination_table=None):
         openai.api_key = openai_api_key
         openai.organization = openai_organization
         self.sql_query = sql_query
