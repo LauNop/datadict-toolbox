@@ -21,7 +21,7 @@ setup(
     keywords=['python', 'data', 'dictionary', 'governance', 'SQL'],
     license="MIT",
     classifiers=[
-        "Development Status :: 3 - Alpha ",
+        "Development Status :: 7 - Inactive",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 3",
         "Operating System :: Microsoft :: Windows"
