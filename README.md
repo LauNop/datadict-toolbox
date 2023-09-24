@@ -1,4 +1,4 @@
-# Dictionary_ToolBox (v1.0.0)
+# Dictionary_ToolBox (v1.0.1)
 
 Dictionary_ToolBox is a python package containing classes for building a tabular, multidimensional cube data dictionary and SQL select queries using OpenAI's GPT templates.
 
